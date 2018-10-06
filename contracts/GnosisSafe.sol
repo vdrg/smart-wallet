@@ -107,7 +107,7 @@ contract GnosisSafe is MasterCopy, BaseSafe, SignatureDecoder, SecuredTokenTrans
         address gasToken,
         address refundReceiver
     )
-        private
+        internal
     {
         uint256 amount = ((gasUsed - gasleft()) + dataGas) * gasPrice;
         // solium-disable-next-line security/no-tx-origin

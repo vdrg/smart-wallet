@@ -2,7 +2,7 @@ const utils = require('./utils')
 const safeUtils = require('./utilsPersonalSafe')
 
 
-const GnosisSafe = artifacts.require("./GnosisSafe.sol")
+const GnosisSafe = artifacts.require("./Groundhog.sol")
 const ProxyFactory = artifacts.require("./ProxyFactory.sol")
 
 
