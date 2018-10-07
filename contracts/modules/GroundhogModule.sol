@@ -1,15 +1,29 @@
 pragma solidity 0.4.24;
 
-import "./common/Enum.sol";
-import "./GnosisSafe.sol";
+import "../base/Module.sol";
+import "../base/ModuleManager.sol";
+import "../base/OwnerManager.sol";
+import "../common/Enum.sol";
+import "../common/SignatureDecoder.sol";
+import "../common/SecuredTokenTransfer.sol";
+import "../interfaces/ISignatureValidator.sol";
+
+
 
 /// @title Gnosis Safe - A multisignature wallet with support for subscriptions
 /// @author Andrew Redden - <andrew@groundhog.network>
-contract Groundhog is GnosisSafe {
+contract GroundhogModule is Module, SignatureDecoder {
 
 
     string public constant NAME = "Groundhog";
     string public constant VERSION = "0.0.1";
+    bytes32 public domainSeparator;
+
+
+    //keccak256(
+    //    "EIP712Domain(address verifyingContract)"
+    //);
+    bytes32 public constant DOMAIN_SEPARATOR_TYPEHASH = 0x035aff83d86937d35b32e04f0ddc6ff469290eef2f1b692d8a815c89404d4749;
 
     //keccak256(
     //  "SafeSubTx(address to, uint256 value, bytes data, Enum.Operation operation, uint256 safeTxGas, uint256 dataGas, uint256 gasPrice, address gasToken, bytes meta)"
@@ -27,17 +41,13 @@ contract Groundhog is GnosisSafe {
         uint256 expires;
     }
 
-    /// @dev Setup function sets initial storage of contract.
-    /// @param _owners List of Safe owners.
-    /// @param _threshold Number of required confirmations for a Safe transaction.
-    /// @param to Contract address for optional delegate call.
-    /// @param data Data payload for optional delegate call.
-    function setup(address[] _owners, uint256 _threshold, address to, bytes data)
+    /// @dev Setup function sets manager
+    function setup()
     public
     {
         require(domainSeparator == 0, "Domain Separator already set!");
         domainSeparator = keccak256(abi.encode(DOMAIN_SEPARATOR_TYPEHASH, this));
-        setupSafe(_owners, _threshold, to, data);
+        setManager();
     }
 
     /// @dev Allows to execute a Safe transaction confirmed by required number of owners and then pays the account that submitted the transaction.
@@ -75,38 +85,106 @@ contract Groundhog is GnosisSafe {
             meta // refundAddress / period / offChainID / expires
         );
 
-        require(checkSignatures(keccak256(subHashData), subHashData, signatures, false), "Invalid signatures provided");
-
         require(gasleft() >= safeTxGas, "Not enough gas to execute safe transaction");
+
+        require(checkHash(keccak256(subHashData), signatures), "Invalid signatures provided");
 
         require(processSub(keccak256(subHashData), meta), "Unable to Process Subscription");
 
         // If no safeTxGas has been set and the gasPrice is 0 we assume that all available gas can be used
-        require(execute(to, value, data, operation, safeTxGas == 0 && gasPrice == 0 ? gasleft() : safeTxGas), "Unable to execute subscription");
+        require(manager.execTransactionFromModule(to, value, data, operation), "Could not execute subscription");
 
         // We transfer the calculated tx costs to the refundReceiver to avoid sending it to intermediate contracts that have made calls
         if (gasPrice > 0) {
-            super.handlePayment(startGas, dataGas, gasPrice, gasToken, bytesToAddress(meta, 0));
+            handlePayment(startGas, dataGas, gasPrice, gasToken, bytesToAddress(meta, 0));
         }
+    }
+
+    function handlePayment(
+        uint256 gasUsed,
+        uint256 dataGas,
+        uint256 gasPrice,
+        address gasToken,
+        address refundReceiver
+    )
+    internal
+    {
+        uint256 amount = ((gasUsed - gasleft()) + dataGas) * gasPrice;
+        // solium-disable-next-line security/no-tx-origin
+        address receiver = refundReceiver == address(0) ? tx.origin : refundReceiver;
+        if (gasToken == address(0)) {
+            // solium-disable-next-line security/no-send
+            require(manager.execTransactionFromModule(receiver, amount, "0x", Enum.Operation.Call), "Could not execute payment");
+        } else {
+            bytes memory data = abi.encodeWithSignature("transfer(address,uint256)", receiver, amount);
+            // solium-disable-next-line security/no-inline-assembly
+            require(manager.execTransactionFromModule(gasToken, 0, data, Enum.Operation.Call), "Could not execute payment in specified gasToken");
+        }
+    }
+
+    /// @dev Allows to estimate a Safe transaction.
+    ///      This method is only meant for estimation purpose, therfore two different protection mechanism against execution in a transaction have been made:
+    ///      1.) The method can only be called from the safe itself
+    ///      2.) The response is returned with a revert
+    ///      When estimating set `from` to the address of the safe.
+    ///      Since the `estimateGas` function includes refunds, call this method to get an estimated of the costs that are deducted from the safe with `execTransaction`
+    /// @param to Destination address of Safe transaction.
+    /// @param value Ether value of Safe transaction.
+    /// @param data Data payload of Safe transaction.
+    /// @param operation Operation type of Safe transaction.
+    /// @return Estimate without refunds and overhead fees (base transaction and payload data gas costs).
+    function requiredTxGas(address to, uint256 value, bytes data, Enum.Operation operation)
+    public
+    authorized
+    returns (uint256)
+    {
+        uint256 startGas = gasleft();
+        // We don't provide an error message here, as we use it to return the estimate
+        // solium-disable-next-line error-reason
+        require(manager.execTransactionFromModule(to, value, data, operation));
+        uint256 requiredGas = startGas - gasleft();
+        // Convert response to string and return via error message
+        revert(string(abi.encodePacked(requiredGas)));
+    }
+
+
+    function checkHash(bytes32 transactionHash, bytes signatures)
+    internal
+    view
+    returns (bool valid)
+    {
+        // There cannot be an owner with address 0.
+        address lastOwner = address(0);
+        address currentOwner;
+        uint256 i;
+        uint256 threshold = OwnerManager(manager).getThreshold();
+        // Validate threshold is reached.
+        valid = false;
+        for (i = 0; i < threshold; i++) {
+            currentOwner = recoverKey(transactionHash, signatures, i);
+            require(OwnerManager(manager).isOwner(currentOwner), "Signature not provided by owner");
+            require(currentOwner > lastOwner, "Signatures are not ordered by owner address");
+            lastOwner = currentOwner;
+        }
+        valid = true;
     }
 
 
     /// @dev Allows to execute a Safe transaction confirmed by required number of owners and then pays the account that submitted the transaction.
     ///      Note: The fees are always transferred, even if the user transaction fails.
     /// @param subscriptionHash bytes32 hash of on chain sub
-    /// @param subscriptionHashData bytes of the input data that was hashed and agreed to, encodeSubscriptionData
     /// @return bool isValid returns the validity of the subscription
     function isValidSubscription(
         bytes32 subscriptionHash,
-        bytes subscriptionHashData,
         bytes signatures
     )
     public
+    view
     returns (bool isValid) {
         if (subscriptions[subscriptionHash].status == Enum.SubscriptionStatus.VALID) {
             return true;
         } else if (subscriptions[subscriptionHash].status == Enum.SubscriptionStatus.INIT) {
-            return (checkSignatures(subscriptionHash, subscriptionHashData, signatures, false));
+            return checkHash(subscriptionHash, signatures);
         }
         return false;
     }
@@ -125,17 +203,6 @@ contract Groundhog is GnosisSafe {
 
     /// @dev used to help mitigate stack issues
     /// @param subHash bytes32
-    /// @return bool
-    function revertSub(
-        bytes32 subHash
-    )
-    private
-    {
-        subscriptions[subHash] = subscriptions[keccak256(abi.encodePacked(subHash))];
-    }
-
-    /// @dev used to help mitigate stack issues
-    /// @param subHash bytes32
     /// @param meta bytes packed meta data
     /// @return bool
     function processSub(
@@ -145,7 +212,6 @@ contract Groundhog is GnosisSafe {
     internal
     returns (bool) {
 
-        subscriptions[keccak256(abi.encodePacked(subHash))] = subscriptions[subHash];
         Meta storage sub = subscriptions[subHash];
 
 
@@ -165,7 +231,7 @@ contract Groundhog is GnosisSafe {
         } else if (period == uint(Enum.Period.MONTH)) {
             sub.nextWithdraw = now + 30 days;
         } else {
-            return false;
+            //sub.nextWithdraw = now; for testing, should return false if no period is defined
         }
 
         if (sub.offChainID == 0 && meta.length >= 115) {
@@ -239,7 +305,7 @@ contract Groundhog is GnosisSafe {
     {
 
         bytes32 safeSubTxHash = keccak256(
-            abi.encode(to, value, keccak256(data), operation, safeTxGas, dataGas, gasPrice, gasToken, meta)
+            abi.encode(to, value, keccak256(data), operation, safeTxGas, dataGas, gasPrice, gasToken, keccak256(meta))
         );
         return abi.encodePacked(byte(0x19), byte(1), domainSeparator, safeSubTxHash);
     }
