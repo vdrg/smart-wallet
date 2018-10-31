@@ -6,6 +6,7 @@ var SocialRecoveryModule = artifacts.require("./SocialRecoveryModule.sol");
 var WhitelistModule = artifacts.require("./WhitelistModule.sol");
 var CreateAndAddModules = artifacts.require("./CreateAndAddModules.sol");
 var MultiSend = artifacts.require("./MultiSend.sol");
+var simple = artifacts.require("./TestUtil.sol");
 
 
 const notOwnedAddress = "0x0000000000000000000000000000000000000002"
@@ -13,6 +14,7 @@ const notOwnedAddress2 = "0x0000000000000000000000000000000000000003"
 
 module.exports = function(deployer) {
     deployer.deploy(ProxyFactory);
+    deployer.deploy(simple);
     deployer.deploy(GnosisSafe).then(function (safe) {
         safe.setup([notOwnedAddress], 1, 0, 0)
         return safe

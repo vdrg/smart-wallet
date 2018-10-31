@@ -9,18 +9,4 @@ contract Enum {
         DelegateCall,
         Create
     }
-
-    enum SubscriptionStatus {
-        INIT,
-        VALID,
-        CANCELLED,
-        EXPIRED,
-        PAYMENT_FAILED
-    }
-
-    enum Period {
-        DAY,
-        WEEK,
-        MONTH
-    }
 }

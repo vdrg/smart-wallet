@@ -4,6 +4,7 @@ import "../base/Module.sol";
 import "../base/ModuleManager.sol";
 import "../base/OwnerManager.sol";
 import "../common/Enum.sol";
+import "../common/GEnum.sol";
 import "../common/SignatureDecoder.sol";
 import "../common/SecuredTokenTransfer.sol";
 import "../interfaces/ISignatureValidator.sol";
@@ -26,16 +27,20 @@ contract GroundhogModule is Module, SignatureDecoder {
     bytes32 public constant DOMAIN_SEPARATOR_TYPEHASH = 0x035aff83d86937d35b32e04f0ddc6ff469290eef2f1b692d8a815c89404d4749;
 
     //keccak256(
-    //  "SafeSubTx(address to, uint256 value, bytes data, Enum.Operation operation, uint256 safeTxGas, uint256 dataGas, uint256 gasPrice, address gasToken, bytes meta)"
+    //  "SafeSubTx(address to,uint256 value,bytes data,uint8 operation,uint256 safeTxGas,uint256 dataGas,uint256 gasPrice,address gasToken,bytes meta)"
     //)
-    bytes32 public constant SAFE_SUB_TX_TYPEHASH = 0x2a1fd34b6cdf5651c9b7ad3362b2310b9883a1d7010ac9b9a7e26876b9418068;
+    bytes32 public constant SAFE_SUB_TX_TYPEHASH = 0x236927053a7ea16e84dcb166de387fee6c357f810c2330bcc2a9f0b22ea0fbd1;
 
     event PaymentFailed(bytes32 subHash);
+    event LogByte32(bytes32 logentry);
+    event LogUint(uint256 logentry);
+    event LogAddress(uint256 logentry);
+
 
     mapping(bytes32 => Meta) public subscriptions;
 
     struct Meta {
-        Enum.SubscriptionStatus status;
+        GEnum.SubscriptionStatus status;
         uint256 nextWithdraw;
         uint256 offChainID;
         uint256 expires;
@@ -151,8 +156,7 @@ contract GroundhogModule is Module, SignatureDecoder {
     function checkHash(bytes32 transactionHash, bytes signatures)
     internal
     view
-    returns (bool valid)
-    {
+    returns (bool valid) {
         // There cannot be an owner with address 0.
         address lastOwner = address(0);
         address currentOwner;
@@ -161,10 +165,11 @@ contract GroundhogModule is Module, SignatureDecoder {
         // Validate threshold is reached.
         valid = false;
         for (i = 0; i < threshold; i++) {
-            currentOwner = recoverKey(transactionHash, signatures, i);
-            require(OwnerManager(manager).isOwner(currentOwner), "Signature not provided by owner");
-            require(currentOwner > lastOwner, "Signatures are not ordered by owner address");
-            lastOwner = currentOwner;
+            LogByte32(transactionHash);
+            //        currentOwner = recoverKey(transactionHash, signatures, i);
+            //            require(OwnerManager(manager).isOwner(currentOwner), "Signature not provided by owner");
+            //            require(currentOwner > lastOwner, "Signatures are not ordered by owner address");
+            //            lastOwner = currentOwner;
         }
         valid = true;
     }
@@ -181,9 +186,9 @@ contract GroundhogModule is Module, SignatureDecoder {
     public
     view
     returns (bool isValid) {
-        if (subscriptions[subscriptionHash].status == Enum.SubscriptionStatus.VALID) {
+        if (subscriptions[subscriptionHash].status == GEnum.SubscriptionStatus.VALID) {
             return true;
-        } else if (subscriptions[subscriptionHash].status == Enum.SubscriptionStatus.INIT) {
+        } else if (subscriptions[subscriptionHash].status == GEnum.SubscriptionStatus.INIT) {
             return checkHash(subscriptionHash, signatures);
         }
         return false;
@@ -198,7 +203,7 @@ contract GroundhogModule is Module, SignatureDecoder {
     public
     authorized
     returns (bool) {
-        (subscriptions[subscriptionHash].status = Enum.SubscriptionStatus.CANCELLED);
+        (subscriptions[subscriptionHash].status = GEnum.SubscriptionStatus.CANCELLED);
     }
 
     /// @dev used to help mitigate stack issues
@@ -215,33 +220,34 @@ contract GroundhogModule is Module, SignatureDecoder {
         Meta storage sub = subscriptions[subHash];
 
 
-        if (sub.status == Enum.SubscriptionStatus.INIT) {
-            sub.status = Enum.SubscriptionStatus.VALID;
+        if (sub.status == GEnum.SubscriptionStatus.INIT) {
+            sub.status = GEnum.SubscriptionStatus.VALID;
         }
 
-        require((subscriptions[subHash].status == Enum.SubscriptionStatus.VALID && subscriptions[subHash].nextWithdraw >= now), "Withdrawal Not Valid");
 
+        uint256 period = bytesToUint(meta,20);
 
-        uint256 period = bytesToUint(meta, 19);
-
-        if (period == uint(Enum.Period.DAY)) {
+        if (period == uint(GEnum.Period.DAY)) {
             sub.nextWithdraw = now + 1 days;
-        } else if (period == uint(Enum.Period.WEEK)) {
+        } else if (period == uint(GEnum.Period.WEEK)) {
             sub.nextWithdraw = now + 7 days;
-        } else if (period == uint(Enum.Period.MONTH)) {
+        } else if (period == uint(GEnum.Period.MONTH)) {
             sub.nextWithdraw = now + 30 days;
         } else {
-            //sub.nextWithdraw = now; for testing, should return false if no period is defined
+            revert(string(abi.encodePacked(period)));
+
         }
 
-        if (sub.offChainID == 0 && meta.length >= 115) {
-            sub.offChainID = bytesToUint(meta, 51);
-        }
+        require((sub.status == GEnum.SubscriptionStatus.VALID && sub.nextWithdraw >= now), "Withdrawal Not Valid");
 
-        //expire set in slot 4, address(20), uint256(32), uint256(32), uint256(32)(optional) 115 length with 0 = 116
-        if ((sub.expires == 0 && meta.length >= 115)) {
-            sub.expires = bytesToUint(meta, 83);
-        }
+//        if (sub.offChainID == 0 && meta.length >= 115) {
+//            sub.offChainID = bytesToUint(meta, 51);
+//        }
+//
+//        //expire set in slot 4, address(20), uint256(32), uint256(32), uint256(32)(optional) 115 length with 0 = 116
+//        if ((sub.expires == 0 && meta.length >= 115)) {
+//            sub.expires = bytesToUint(meta, 83);
+//        }
 
         return true;
 
@@ -305,7 +311,7 @@ contract GroundhogModule is Module, SignatureDecoder {
     {
 
         bytes32 safeSubTxHash = keccak256(
-            abi.encode(to, value, keccak256(data), operation, safeTxGas, dataGas, gasPrice, gasToken, keccak256(meta))
+            abi.encode(SAFE_SUB_TX_TYPEHASH, to, value, keccak256(data), operation, safeTxGas, dataGas, gasPrice, gasToken, keccak256(meta))
         );
         return abi.encodePacked(byte(0x19), byte(1), domainSeparator, safeSubTxHash);
     }
@@ -318,7 +324,7 @@ contract GroundhogModule is Module, SignatureDecoder {
     internal
     pure
     returns (uint256 oUint) {
-        require(_bytes.length >= (_start + 32));
+        require(_bytes.length >= (_start + 32), "not long enough to be a valid uint");
         assembly {
             oUint := mload(add(add(_bytes, 0x20), _start))
         }
@@ -331,7 +337,7 @@ contract GroundhogModule is Module, SignatureDecoder {
     internal
     pure
     returns (address oAddress) {
-        require(_bytes.length >= (_start + 20));
+        require(_bytes.length >= (_start + 20), "Not long enough to be a valid address");
         assembly {
             oAddress := div(mload(add(add(_bytes, 0x20), _start)), 0x1000000000000000000000000)
         }

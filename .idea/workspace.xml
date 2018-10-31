@@ -2,12 +2,17 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="307541b4-b4c1-4ad2-ba6f-ef982a2e7cb0" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/contracts/modules/GroundhogModule.sol" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/test/groundhogModule.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/contracts/common/GEnum.sol" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/contracts/common/TestUtil.sol" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/Groundhog.sol" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/contracts/common/Enum.sol" beforeDir="false" afterPath="$PROJECT_DIR$/contracts/common/Enum.sol" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/contracts/modules/GroundhogModule.sol" beforeDir="false" afterPath="$PROJECT_DIR$/contracts/modules/GroundhogModule.sol" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/migrations/2_deploy_contracts.js" beforeDir="false" afterPath="$PROJECT_DIR$/migrations/2_deploy_contracts.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/test/gnosisSafePersonalEditionEthSignTypeData.js" beforeDir="false" afterPath="$PROJECT_DIR$/test/gnosisSafePersonalEditionEthSignTypeData.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/groundhogModule.js" beforeDir="false" afterPath="$PROJECT_DIR$/test/groundhogModule.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/truffle.js" beforeDir="false" afterPath="$PROJECT_DIR$/truffle.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/yarn.lock" beforeDir="false" afterPath="$PROJECT_DIR$/yarn.lock" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/.tmp/" />
     <ignored path="$PROJECT_DIR$/temp/" />
@@ -22,42 +27,48 @@
     <session id="-957951067">
       <usages-collector id="statistics.file.extensions.edit">
         <counts>
-          <entry key="js" value="800" />
-          <entry key="json" value="37" />
-          <entry key="sol" value="487" />
+          <entry key="js" value="1875" />
+          <entry key="json" value="133" />
+          <entry key="sol" value="856" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.types.edit">
         <counts>
-          <entry key="JSON" value="37" />
-          <entry key="JavaScript" value="800" />
-          <entry key="Solidity file" value="487" />
+          <entry key="JSON" value="133" />
+          <entry key="JavaScript" value="1875" />
+          <entry key="Solidity file" value="856" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.extensions.open">
         <counts>
-          <entry key="js" value="29" />
-          <entry key="json" value="3" />
+          <entry key="js" value="62" />
+          <entry key="json" value="6" />
           <entry key="log" value="1" />
-          <entry key="sol" value="28" />
+          <entry key="md" value="1" />
+          <entry key="sol" value="53" />
           <entry key="txt" value="1" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.types.open">
         <counts>
-          <entry key="JSON" value="3" />
-          <entry key="JavaScript" value="28" />
+          <entry key="JSON" value="6" />
+          <entry key="JavaScript" value="61" />
+          <entry key="Markdown" value="1" />
           <entry key="PLAIN_TEXT" value="1" />
           <entry key="Scratch" value="2" />
-          <entry key="Solidity file" value="28" />
+          <entry key="Solidity file" value="53" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.lifecycle.project">
         <counts>
-          <entry key="project.closed" value="1" />
-          <entry key="project.open.time.1" value="1" />
+          <entry key="project.closed" value="7" />
+          <entry key="project.open.time.0" value="1" />
+          <entry key="project.open.time.1" value="3" />
+          <entry key="project.open.time.5" value="1" />
+          <entry key="project.open.time.7" value="1" />
           <entry key="project.open.time.8" value="1" />
-          <entry key="project.opened" value="2" />
+          <entry key="project.open.time.9" value="1" />
+          <entry key="project.opened" value="8" />
         </counts>
       </usages-collector>
     </session>
@@ -65,31 +76,73 @@
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="174">
       <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/contracts/GnosisSafe.sol">
+        <entry file="file://$PROJECT_DIR$/test/groundhogModule.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="137">
-              <caret line="184" column="2" selection-start-line="184" selection-start-column="2" selection-end-line="207" selection-end-column="5" />
-              <folding>
-                <element signature="e#6533#6570#1" />
-              </folding>
+            <state relative-caret-position="1290">
+              <caret line="86" column="64" selection-start-line="86" selection-start-column="64" selection-end-line="86" selection-end-column="64" />
             </state>
           </provider>
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/test/gnosisSafePersonalEditionEthSignTypeData.js">
+        <entry file="file://$PROJECT_DIR$/contracts/common/SignatureDecoder.sol">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="260">
-              <caret line="73" column="28" lean-forward="true" selection-end-line="111" />
+            <state relative-caret-position="315">
+              <caret line="21" column="16" selection-start-line="21" selection-start-column="8" selection-end-line="21" selection-end-column="16" />
             </state>
           </provider>
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/contracts/common/Enum.sol">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="150">
+              <caret line="10" column="5" selection-start-line="10" selection-start-column="5" selection-end-line="10" selection-end-column="5" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/contracts/common/GEnum.sol">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="210">
+              <caret line="14" column="12" selection-start-line="14" selection-start-column="12" selection-end-line="14" selection-end-column="12" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/contracts/common/TestUtil.sol">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="525">
+              <caret line="35" column="16" selection-start-line="35" selection-start-column="16" selection-end-line="35" selection-end-column="16" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/migrations/2_deploy_contracts.js">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="120">
+              <caret line="8" column="34" selection-start-line="8" selection-start-column="34" selection-end-line="8" selection-end-column="34" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/contracts/modules/GroundhogModule.sol">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="136">
-              <caret line="15" lean-forward="true" selection-start-line="15" selection-end-line="15" />
+            <state relative-caret-position="1999">
+              <caret line="328" column="58" selection-start-line="328" selection-start-column="58" selection-end-line="328" selection-end-column="58" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/contracts/GnosisSafe.sol">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="3090">
+              <caret line="206" column="54" selection-start-line="206" selection-start-column="8" selection-end-line="206" selection-end-column="54" />
             </state>
           </provider>
         </entry>
@@ -97,8 +150,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/test/stateChannelModule.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="240">
-              <caret line="16" column="23" lean-forward="true" selection-end-line="132" />
+            <state relative-caret-position="420">
+              <caret line="28" column="55" selection-start-line="28" selection-start-column="55" selection-end-line="28" selection-end-column="55" />
             </state>
           </provider>
         </entry>
@@ -106,52 +159,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/contracts/modules/StateChannelModule.sol">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="690">
-              <caret line="46" selection-start-line="46" selection-end-line="47" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/package.json">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="165">
-              <caret line="11" column="19" selection-start-line="11" selection-start-column="19" selection-end-line="11" selection-end-column="19" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/test/groundhogModule.js">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="139">
-              <caret line="85" column="55" selection-start-line="85" selection-start-column="55" selection-end-line="85" selection-end-column="55" />
-              <folding>
-                <element signature="e#1182#3141#0" />
-                <element signature="e#3839#3979#0" />
-                <element signature="e#1553#3212#0" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/test/utilsPersonalSafe.js">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="60">
-              <caret line="4" selection-start-line="4" selection-end-line="5" />
-              <folding>
-                <element signature="e#1184#3671#0" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/test/multiSend.js">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="15">
-              <caret line="21" column="13" selection-start-line="21" selection-start-column="13" selection-end-line="21" selection-end-column="13" />
+            <state relative-caret-position="135">
+              <caret line="9" column="9" selection-start-line="9" selection-start-column="9" selection-end-line="9" selection-end-column="9" />
             </state>
           </provider>
         </entry>
@@ -160,37 +169,41 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>GroundhogWallet</find>
-      <find>private</find>
-      <find>isValid</find>
-      <find>isValidSig</find>
-      <find>DELEGATECALL</find>
-      <find>recoverKey</find>
-      <find>isValidSignature</find>
-      <find>handlePayment</find>
-      <find>owners</find>
-      <find>groundhog.sol</find>
-      <find>Groundhog.sol</find>
-      <find>operation</find>
-      <find>CALL</find>
-      <find>checkSignatures</find>
-      <find>domainSepera</find>
-      <find>domain</find>
-      <find>setup</find>
-      <find>bytes su</find>
-      <find>subscriptionHashData</find>
-      <find>isVali</find>
-      <find>data</find>
-      <find>signTx</find>
-      <find>executeTransaction</find>
-      <find>SafeTx</find>
-      <find>confirmi</find>
-      <find>refundAdd</find>
-      <find>requiredTx</find>
-      <find>execSubscription</find>
-      <find>GAS_PRICE</find>
-      <find>refundReceiver</find>
+      <find>approvedHashes</find>
+      <find>SAFE_SUB_TX_TYPEHASH</find>
+      <find>not valid</find>
+      <find>let tx =</find>
+      <find>stateChannelModule</find>
+      <find>groundhogModule</find>
+      <find>event</find>
+      <find>checkTxEvent</find>
+      <find>gasPrice</find>
+      <find>estimateGas</find>
+      <find>.dai</find>
+      <find>.lastDay</find>
+      <find>.spentToday</find>
+      <find>checkHash</find>
+      <find>safeSub</find>
+      <find>meta</find>
+      <find>meta</find>
+      <find>bytesToUint</find>
+      <find>SolidityCoder</find>
+      <find>ethereumjs-a</find>
+      <find>meta =</find>
+      <find>execSubs</find>
+      <find>Logs</find>
+      <find>LogByte</find>
+      <find>execSub</find>
+      <find>encodeConstructorParams</find>
+      <find>valid</find>
+      <find>Withdrawal</find>
+      <find>gnosissafe.sol</find>
+      <find>re</find>
     </findStrings>
+    <replaceStrings>
+      <replace>GEnum.SubscriptionStatus</replace>
+      <replace>GEnum.Period</replace>
+    </replaceStrings>
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -200,8 +213,6 @@
       <list>
         <option value="$PROJECT_DIR$/.travis.yml" />
         <option value="$PROJECT_DIR$/migrations/3_deploy_contracts.js" />
-        <option value="$PROJECT_DIR$/truffle.js" />
-        <option value="$PROJECT_DIR$/contracts/modules/DailyLimitModule.sol" />
         <option value="$PROJECT_DIR$/contracts/base/ModuleManager.sol" />
         <option value="$PROJECT_DIR$/contracts/common/ERC948.sol" />
         <option value="$PROJECT_DIR$/contracts/interfaces/IERC940.sol" />
@@ -211,19 +222,16 @@
         <option value="$PROJECT_DIR$/scripts/init_contracts.js" />
         <option value="$PROJECT_DIR$/test/utils.js" />
         <option value="$PROJECT_DIR$/test/utilsPersonalSafe.js" />
-        <option value="$PROJECT_DIR$/contracts/common/GEnum.sol" />
         <option value="$PROJECT_DIR$/test/utilsGroundhog.js" />
         <option value="$PROJECT_DIR$/test/groundhog.js" />
         <option value="$PROJECT_DIR$/test/groundhogEthSignTypeData.js" />
         <option value="$PROJECT_DIR$/contracts/common/SelfAuthorized.sol" />
         <option value="$PROJECT_DIR$/contracts/base/BaseSafe.sol" />
-        <option value="$PROJECT_DIR$/contracts/common/Enum.sol" />
         <option value="$APPLICATION_CONFIG_DIR$/scratches/scratch.js" />
         <option value="$APPLICATION_CONFIG_DIR$/scratches/scratch.txt" />
         <option value="$PROJECT_DIR$/contracts/GnosisSafe.sol" />
         <option value="$PROJECT_DIR$/test/createAndAddModules.js" />
         <option value="$PROJECT_DIR$/test/dailyLimitModule.js" />
-        <option value="$PROJECT_DIR$/test/gnosisSafePersonalEdition.js" />
         <option value="$PROJECT_DIR$/test/gnosisSafePersonalEditionCreation.js" />
         <option value="$PROJECT_DIR$/test/gnosisSafePersonalEditionNestedSafes.js" />
         <option value="$PROJECT_DIR$/test/gnosisSafeTeamEdition.js" />
@@ -232,12 +240,19 @@
         <option value="$PROJECT_DIR$/test/socialRecoveryModule.js" />
         <option value="$PROJECT_DIR$/test/whitelistModule.js" />
         <option value="$PROJECT_DIR$/contracts/Groundhog.sol" />
-        <option value="$PROJECT_DIR$/migrations/2_deploy_contracts.js" />
-        <option value="$PROJECT_DIR$/contracts/modules/GroundhogModule.sol" />
-        <option value="$PROJECT_DIR$/test/groundhogModule.js" />
-        <option value="$PROJECT_DIR$/test/gnosisSafePersonalEditionEthSignTypeData.js" />
         <option value="$PROJECT_DIR$/test/stateChannelModule.js" />
+        <option value="$PROJECT_DIR$/contracts/common/Enum.sol" />
+        <option value="$PROJECT_DIR$/test/gnosisSafePersonalEdition.js" />
+        <option value="$PROJECT_DIR$/test/gnosisSafePersonalEditionEthSignTypeData.js" />
+        <option value="$PROJECT_DIR$/node_modules/run-with-testrpc/bin/run-with-testrpc.js" />
         <option value="$PROJECT_DIR$/package.json" />
+        <option value="$PROJECT_DIR$/truffle.js" />
+        <option value="$PROJECT_DIR$/contracts/modules/DailyLimitModule.sol" />
+        <option value="$PROJECT_DIR$/migrations/2_deploy_contracts.js" />
+        <option value="$PROJECT_DIR$/contracts/common/TestUtil.sol" />
+        <option value="$PROJECT_DIR$/contracts/common/GEnum.sol" />
+        <option value="$PROJECT_DIR$/test/groundhogModule.js" />
+        <option value="$PROJECT_DIR$/contracts/modules/GroundhogModule.sol" />
       </list>
     </option>
   </component>
@@ -256,10 +271,9 @@
     </packageJsonPaths>
   </component>
   <component name="ProjectFrameBounds">
-    <option name="x" value="84" />
-    <option name="y" value="107" />
-    <option name="width" value="1775" />
-    <option name="height" value="1028" />
+    <option name="y" value="22" />
+    <option name="width" value="1920" />
+    <option name="height" value="1178" />
   </component>
   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="ProjectView">
@@ -305,18 +319,6 @@
               <item name="safe-contracts" type="b2602c69:ProjectViewProjectNode" />
               <item name="safe-contracts" type="462c0819:PsiDirectoryNode" />
               <item name="contracts" type="462c0819:PsiDirectoryNode" />
-              <item name="interfaces" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="safe-contracts" type="b2602c69:ProjectViewProjectNode" />
-              <item name="safe-contracts" type="462c0819:PsiDirectoryNode" />
-              <item name="contracts" type="462c0819:PsiDirectoryNode" />
-              <item name="libraries" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="safe-contracts" type="b2602c69:ProjectViewProjectNode" />
-              <item name="safe-contracts" type="462c0819:PsiDirectoryNode" />
-              <item name="contracts" type="462c0819:PsiDirectoryNode" />
               <item name="modules" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
@@ -345,12 +347,14 @@
     </panes>
   </component>
   <component name="PropertiesComponent">
+    <property name="SearchEverywhereHistoryKey" value="gnosis&#9;FILE&#9;file:///Users/andrewredden/Development/gh/safe-contracts/contracts/GnosisSafe.sol" />
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="nodejs_package_manager_path" value="yarn" />
     <property name="prettierjs.PrettierConfiguration.Package" value="$PROJECT_DIR$/node_modules/prettier" />
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/contracts/common" />
       <recent name="$PROJECT_DIR$/test" />
     </key>
   </component>
@@ -373,7 +377,6 @@
       <scripts>
         <script value="test-norpc" />
       </scripts>
-      <arguments value="$NODE_DEBUG_OPTION" />
       <node-interpreter value="project" />
       <envs />
       <method v="2" />
@@ -406,20 +409,26 @@
       <workItem from="1538722413652" duration="572000" />
       <workItem from="1538860364099" duration="624000" />
       <workItem from="1538865369749" duration="6472000" />
+      <workItem from="1538878786785" duration="12624000" />
+      <workItem from="1539268795959" duration="1156000" />
+      <workItem from="1539700521756" duration="2000" />
+      <workItem from="1539700589169" duration="1405000" />
+      <workItem from="1539881678954" duration="238000" />
+      <workItem from="1540581907910" duration="544000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="10944000" />
+    <option name="totallyTimeSpent" value="32890000" />
   </component>
   <component name="ToolWindowManager">
-    <frame x="84" y="107" width="1775" height="1028" extended-state="0" />
+    <frame x="0" y="22" width="1920" height="1178" extended-state="0" />
     <editor active="true" />
     <layout>
       <window_info id="npm" order="0" side_tool="true" />
       <window_info id="Favorites" order="1" side_tool="true" />
       <window_info id="Structure" order="2" side_tool="true" weight="0.25" />
-      <window_info content_ui="combo" id="Project" order="3" visible="true" weight="0.20695554" />
+      <window_info content_ui="combo" id="Project" order="3" visible="true" weight="0.19115324" />
       <window_info anchor="bottom" id="TypeScript" order="0" />
       <window_info anchor="bottom" id="Docker" order="1" show_stripe_button="false" />
       <window_info anchor="bottom" id="Terminal" order="2" weight="0.43162394" />
@@ -428,7 +437,7 @@
       <window_info anchor="bottom" id="Message" order="5" />
       <window_info anchor="bottom" id="Find" order="6" weight="0.3188406" />
       <window_info anchor="bottom" id="Run" order="7" weight="0.32905984" />
-      <window_info active="true" anchor="bottom" id="Debug" order="8" visible="true" weight="0.48504272" />
+      <window_info anchor="bottom" id="Debug" order="8" weight="0.48504272" />
       <window_info anchor="bottom" id="Cvs" order="9" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="10" weight="0.4" />
       <window_info anchor="bottom" id="TODO" order="11" weight="0.3296501" />
@@ -440,10 +449,10 @@
       <window_info id="npm" order="0" side_tool="true" />
       <window_info id="Favorites" order="1" side_tool="true" />
       <window_info id="Structure" order="2" side_tool="true" weight="0.25" />
-      <window_info active="true" content_ui="combo" id="Project" order="3" visible="true" weight="0.20695554" />
+      <window_info content_ui="combo" id="Project" order="3" weight="0.20695554" />
       <window_info anchor="bottom" id="TypeScript" order="0" />
       <window_info anchor="bottom" id="Docker" order="1" show_stripe_button="false" />
-      <window_info anchor="bottom" id="Terminal" order="2" weight="0.43162394" />
+      <window_info active="true" anchor="bottom" id="Terminal" order="2" visible="true" weight="0.43162394" />
       <window_info anchor="bottom" id="Event Log" order="3" side_tool="true" />
       <window_info anchor="bottom" id="Version Control" order="4" show_stripe_button="false" />
       <window_info anchor="bottom" id="Message" order="5" />
@@ -488,32 +497,34 @@
           <option name="timeStamp" value="16" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="javascript">
-          <url>file://$PROJECT_DIR$/test/gnosisSafePersonalEditionEthSignTypeData.js</url>
-          <line>47</line>
-          <option name="timeStamp" value="17" />
+          <url>file://$PROJECT_DIR$/test/utilsPersonalSafe.js</url>
+          <line>25</line>
+          <option name="timeStamp" value="29" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="javascript">
-          <url>file://$PROJECT_DIR$/test/gnosisSafePersonalEditionEthSignTypeData.js</url>
-          <line>34</line>
-          <option name="timeStamp" value="18" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="javascript">
-          <url>file://$PROJECT_DIR$/test/groundhogModule.js</url>
-          <line>104</line>
-          <properties lambdaOrdinal="-1" />
-          <option name="timeStamp" value="19" />
+          <url>file://$PROJECT_DIR$/test/utils.js</url>
+          <line>109</line>
+          <option name="timeStamp" value="30" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="javascript">
           <url>file://$PROJECT_DIR$/test/groundhogModule.js</url>
-          <line>85</line>
-          <properties lambdaOrdinal="-1" />
-          <option name="timeStamp" value="20" />
+          <line>258</line>
+          <option name="timeStamp" value="32" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="javascript">
           <url>file://$PROJECT_DIR$/test/groundhogModule.js</url>
-          <line>84</line>
-          <properties lambdaOrdinal="-1" />
-          <option name="timeStamp" value="21" />
+          <line>229</line>
+          <option name="timeStamp" value="33" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="javascript">
+          <url>file://$PROJECT_DIR$/test/groundhogModule.js</url>
+          <line>128</line>
+          <option name="timeStamp" value="35" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="javascript">
+          <url>file://$PROJECT_DIR$/test/groundhogModule.js</url>
+          <line>140</line>
+          <option name="timeStamp" value="36" />
         </line-breakpoint>
       </breakpoints>
       <breakpoints-dialog>
@@ -554,13 +565,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/test/gnosisSafePersonalEdition.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="300">
-          <caret line="20" column="42" selection-end-line="283" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/test/gnosisSafePersonalEditionCreation.js">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="300">
@@ -572,9 +576,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state>
           <caret selection-end-line="121" />
-          <folding>
-            <element signature="n#!!doc" expanded="true" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -582,9 +583,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state>
           <caret selection-end-line="32" />
-          <folding>
-            <element signature="n#!!doc" expanded="true" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -592,9 +590,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state>
           <caret selection-end-line="67" />
-          <folding>
-            <element signature="n#!!doc" expanded="true" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -602,34 +597,10 @@
       <provider selected="true" editor-type-id="text-editor">
         <state>
           <caret selection-end-line="90" />
-          <folding>
-            <element signature="n#!!doc" expanded="true" />
-          </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/build/contracts/GroundhogWallet.json" />
-    <entry file="file://$PROJECT_DIR$/test/gnosisSafePersonalEditionNestedSafes.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="210">
-          <caret line="14" column="30" selection-end-line="99" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/contracts/base/BaseSafe.sol">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="135">
-          <caret line="9" column="11" selection-start-line="9" selection-start-column="11" selection-end-line="9" selection-end-column="11" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/contracts/modules/DailyLimitModule.sol">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-73">
-          <caret line="6" lean-forward="true" selection-start-line="6" selection-end-line="6" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/test/dailyLimitModule.js">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="181">
@@ -637,31 +608,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/contracts/base/OwnerManager.sol">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-715">
-          <caret line="6" column="13" lean-forward="true" selection-start-line="6" selection-start-column="13" selection-end-line="6" selection-end-column="13" />
-          <folding>
-            <element signature="n#!!block;n#setupOwners#0;n#OwnerManager#0" />
-            <element signature="n#!!block;n#addOwnerWithThreshold#0;n#OwnerManager#0" />
-            <element signature="n#!!block;n#removeOwner#0;n#OwnerManager#0" />
-            <element signature="n#!!block;n#swapOwner#0;n#OwnerManager#0" />
-            <element signature="n#!!block;n#changeThreshold#0;n#OwnerManager#0" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/contracts/interfaces/ISignatureValidator.sol">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="165">
           <caret line="11" column="13" selection-start-line="11" selection-start-column="13" selection-end-line="11" selection-end-column="13" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/contracts/common/SignatureDecoder.sol">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="180">
-          <caret line="12" column="18" selection-start-line="12" selection-start-column="18" selection-end-line="12" selection-end-column="18" />
         </state>
       </provider>
     </entry>
@@ -679,48 +629,11 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/contracts/Groundhog.sol">
-      <provider selected="true" editor-type-id="text-editor" />
-    </entry>
-    <entry file="file://$PROJECT_DIR$/migrations/2_deploy_contracts.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="375">
-          <caret line="25" column="21" selection-start-line="25" selection-start-column="21" selection-end-line="25" selection-end-column="21" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/contracts/common/Enum.sol">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="255">
-          <caret line="17" column="22" lean-forward="true" selection-start-line="17" selection-start-column="22" selection-end-line="17" selection-end-column="22" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/test/utils.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state>
-          <caret column="29" lean-forward="true" selection-start-column="29" selection-end-column="29" />
-        </state>
-      </provider>
-    </entry>
+    <entry file="file://$PROJECT_DIR$/contracts/Groundhog.sol" />
     <entry file="file://$PROJECT_DIR$/contracts/common/MasterCopy.sol">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="90">
           <caret line="6" column="9" selection-start-line="6" selection-start-column="9" selection-end-line="6" selection-end-column="9" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/contracts/base/Module.sol">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="225">
-          <caret line="15" column="5" lean-forward="true" selection-start-line="15" selection-start-column="5" selection-end-line="15" selection-end-column="5" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/node_modules/eth-lightwallet/lib/signing.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="239">
-          <caret line="35" lean-forward="true" selection-start-line="35" selection-end-line="35" />
         </state>
       </provider>
     </entry>
@@ -731,70 +644,208 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/contracts/GnosisSafe.sol">
+    <entry file="file://$PROJECT_DIR$/contracts/base/Module.sol">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="137">
-          <caret line="184" column="2" selection-start-line="184" selection-start-column="2" selection-end-line="207" selection-end-column="5" />
-          <folding>
-            <element signature="e#6533#6570#1" />
-          </folding>
+        <state relative-caret-position="180">
+          <caret line="12" column="27" lean-forward="true" selection-start-line="12" selection-start-column="27" selection-end-line="12" selection-end-column="27" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/contracts/modules/StateChannelModule.sol">
+    <entry file="file://$PROJECT_DIR$/test/gnosisSafePersonalEditionNestedSafes.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="690">
-          <caret line="46" selection-start-line="46" selection-end-line="47" />
+        <state relative-caret-position="210">
+          <caret line="14" column="30" selection-end-line="99" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/test/gnosisSafePersonalEdition.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="191">
+          <caret line="27" column="50" lean-forward="true" selection-start-line="27" selection-start-column="50" selection-end-line="27" selection-end-column="50" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/contracts/base/OwnerManager.sol">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="285">
+          <caret line="39" column="41" lean-forward="true" selection-start-line="39" selection-start-column="41" selection-end-line="39" selection-end-column="41" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/contracts/base/BaseSafe.sol">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="285">
+          <caret line="19" column="14" lean-forward="true" selection-start-line="19" selection-start-column="14" selection-end-line="19" selection-end-column="14" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/node_modules/eth-lightwallet/lib/signing.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="276">
+          <caret line="36" column="78" lean-forward="true" selection-start-line="36" selection-start-column="78" selection-end-line="36" selection-end-column="78" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/README.md">
+      <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
+        <state split_layout="SPLIT">
+          <first_editor />
+          <second_editor />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/test/utilsPersonalSafe.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="60">
-          <caret line="4" selection-start-line="4" selection-end-line="5" />
-          <folding>
-            <element signature="e#1184#3671#0" />
-          </folding>
+        <state relative-caret-position="375">
+          <caret line="25" column="27" selection-start-line="25" selection-start-column="27" selection-end-line="25" selection-end-column="27" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/contracts/modules/GroundhogModule.sol">
+    <entry file="file://$PROJECT_DIR$/node_modules/run-with-testrpc/bin/run-with-testrpc.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="136">
-          <caret line="15" lean-forward="true" selection-start-line="15" selection-end-line="15" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/test/gnosisSafePersonalEditionEthSignTypeData.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="260">
-          <caret line="73" column="28" lean-forward="true" selection-end-line="111" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/test/stateChannelModule.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="240">
-          <caret line="16" column="23" lean-forward="true" selection-end-line="132" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/test/groundhogModule.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="139">
-          <caret line="85" column="55" selection-start-line="85" selection-start-column="55" selection-end-line="85" selection-end-column="55" />
-          <folding>
-            <element signature="e#1182#3141#0" />
-            <element signature="e#3839#3979#0" />
-            <element signature="e#1553#3212#0" />
-          </folding>
+        <state relative-caret-position="74">
+          <caret line="23" column="29" selection-start-line="23" selection-start-column="29" selection-end-line="23" selection-end-column="29" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/package.json">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="165">
-          <caret line="11" column="19" selection-start-line="11" selection-start-column="19" selection-end-line="11" selection-end-column="19" />
+        <state relative-caret-position="315">
+          <caret line="38" column="20" lean-forward="true" selection-start-line="38" selection-start-column="20" selection-end-line="38" selection-end-column="20" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/truffle.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="45">
+          <caret line="11" column="12" selection-start-line="11" selection-start-column="12" selection-end-line="11" selection-end-column="12" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/test/utils.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="466">
+          <caret line="125" column="4" selection-start-line="125" selection-start-column="4" selection-end-line="125" selection-end-column="4" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/test/gnosisSafePersonalEditionEthSignTypeData.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1680">
+          <caret line="112" selection-start-line="112" selection-end-line="112" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/node_modules/web3/lib/web3/function.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="143">
+          <caret line="32" column="4" selection-start-line="32" selection-start-column="4" selection-end-line="32" selection-end-column="4" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/contracts/modules/WhitelistModule.sol">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/contracts/modules/SocialRecoveryModule.sol">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-143" />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/contracts/modules/DailyLimitModule.sol">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="465">
+          <caret line="31" column="38" selection-start-line="31" selection-start-column="34" selection-end-line="31" selection-end-column="38" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/node_modules/run-with-testrpc/package.json">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="405">
+          <caret line="27" column="20" selection-start-line="27" selection-start-column="20" selection-end-line="27" selection-end-column="26" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/node_modules/web3/lib/solidity/coder.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="390">
+          <caret line="41" column="3" lean-forward="true" selection-start-line="41" selection-start-column="3" selection-end-line="41" selection-end-column="3" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/node_modules/web3/lib/web3/contract.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="293">
+          <caret line="306" column="19" lean-forward="true" selection-start-line="306" selection-start-column="19" selection-end-line="306" selection-end-column="19" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/test/groundhogModule.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1290">
+          <caret line="86" column="64" selection-start-line="86" selection-start-column="64" selection-end-line="86" selection-end-column="64" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/contracts/common/SignatureDecoder.sol">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="315">
+          <caret line="21" column="16" selection-start-line="21" selection-start-column="8" selection-end-line="21" selection-end-column="16" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/contracts/common/Enum.sol">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="150">
+          <caret line="10" column="5" selection-start-line="10" selection-start-column="5" selection-end-line="10" selection-end-column="5" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/contracts/common/GEnum.sol">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="210">
+          <caret line="14" column="12" selection-start-line="14" selection-start-column="12" selection-end-line="14" selection-end-column="12" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/contracts/common/TestUtil.sol">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="525">
+          <caret line="35" column="16" selection-start-line="35" selection-start-column="16" selection-end-line="35" selection-end-column="16" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/migrations/2_deploy_contracts.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="120">
+          <caret line="8" column="34" selection-start-line="8" selection-start-column="34" selection-end-line="8" selection-end-column="34" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/contracts/GnosisSafe.sol">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="3090">
+          <caret line="206" column="54" selection-start-line="206" selection-start-column="8" selection-end-line="206" selection-end-column="54" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/test/stateChannelModule.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="420">
+          <caret line="28" column="55" selection-start-line="28" selection-start-column="55" selection-end-line="28" selection-end-column="55" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/contracts/modules/StateChannelModule.sol">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="135">
+          <caret line="9" column="9" selection-start-line="9" selection-start-column="9" selection-end-line="9" selection-end-column="9" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/contracts/modules/GroundhogModule.sol">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1999">
+          <caret line="328" column="58" selection-start-line="328" selection-start-column="58" selection-end-line="328" selection-end-column="58" />
         </state>
       </provider>
     </entry>

@@ -52,7 +52,7 @@
 //         let executorBalance = await web3.eth.getBalance(executor).toNumber()
 //
 //         let confirmingAccounts = [accounts[0], accounts[2]]
-//         let signer = async function(to, value, data, operation, txGasEstimate, dataGasEstimate, gasPrice, txGasToken, nonce) {
+//         let signer = async function(to, value, data, operation, txGasEstimate, dataGasEstimate, gasPrice, txGasToken, refundReceiver, nonce) {
 //             let typedData = {
 //                 types: {
 //                     EIP712Domain: [
@@ -68,6 +68,7 @@
 //                         { type: "uint256", name: "dataGas" },
 //                         { type: "uint256", name: "gasPrice" },
 //                         { type: "address", name: "gasToken" },
+//                         { type: "address", name: "refundReceiver" },
 //                         { type: "uint256", name: "nonce" },
 //                     ]
 //                 },
