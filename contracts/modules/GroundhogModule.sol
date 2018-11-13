@@ -42,7 +42,7 @@ contract GroundhogModule is Module, SignatureDecoder {
     struct Meta {
         GEnum.SubscriptionStatus status;
         uint256 nextWithdraw;
-        uint256 offChainID;
+        bytes32 offChainID;
         uint256 expires;
     }
 
@@ -76,36 +76,48 @@ contract GroundhogModule is Module, SignatureDecoder {
         uint256 dataGas,
         uint256 gasPrice,
         address gasToken,
+        address refundAddress,
         bytes meta,
         bytes signatures
     )
     public
-    returns (bool)
+    returns (bool success)
     {
         uint256 startGas = gasleft();
 
         bytes memory subHashData = encodeSubscriptionData(
             to, value, data, operation, // Transaction info
-            safeTxGas, dataGas, gasPrice, gasToken,
-            meta // refundAddress / period / offChainID / expires
+            safeTxGas, dataGas, gasPrice, gasToken, refundAddress,
+            meta
         );
 
         require(gasleft() >= safeTxGas, "Not enough gas to execute safe transaction");
 
         require(checkHash(keccak256(subHashData), signatures), "Invalid signatures provided");
 
-        require(processSub(keccak256(subHashData), meta), "Unable to Process Subscription");
+        address ctx = address(this);
+        assembly {
+            success := call(gas, ctx, 0, add(meta, 0x20), mload(meta), 0, 0)
+        }
 
+        require(paySubscription(to, value, data, operation), "Unable to Process Subscription Payment");
         // If no safeTxGas has been set and the gasPrice is 0 we assume that all available gas can be used
-        require(manager.execTransactionFromModule(to, value, data, operation), "Could not execute subscription");
 
         // We transfer the calculated tx costs to the refundReceiver to avoid sending it to intermediate contracts that have made calls
         if (gasPrice > 0) {
-            handlePayment(startGas, dataGas, gasPrice, gasToken, bytesToAddress(meta, 0));
+            handleTxPayment(startGas, dataGas, gasPrice, gasToken, refundAddress);
         }
     }
 
-    function handlePayment(
+    function paySubscription(address to, uint256 value, bytes data, Enum.Operation operation)
+    authorized
+    internal
+    returns (bool success) {
+        success = manager.execTransactionFromModule(to, value, data, operation);
+        require(success, "Could not execute subscription");
+    }
+
+    function handleTxPayment(
         uint256 gasUsed,
         uint256 dataGas,
         uint256 gasPrice,
@@ -165,11 +177,10 @@ contract GroundhogModule is Module, SignatureDecoder {
         // Validate threshold is reached.
         valid = false;
         for (i = 0; i < threshold; i++) {
-            LogByte32(transactionHash);
-            //        currentOwner = recoverKey(transactionHash, signatures, i);
-            //            require(OwnerManager(manager).isOwner(currentOwner), "Signature not provided by owner");
-            //            require(currentOwner > lastOwner, "Signatures are not ordered by owner address");
-            //            lastOwner = currentOwner;
+            currentOwner = recoverKey(transactionHash, signatures, i);
+            require(OwnerManager(manager).isOwner(currentOwner), "Signature not provided by owner");
+            require(currentOwner > lastOwner, "Signatures are not ordered by owner address");
+            lastOwner = currentOwner;
         }
         valid = true;
     }
@@ -203,29 +214,45 @@ contract GroundhogModule is Module, SignatureDecoder {
     public
     authorized
     returns (bool) {
-        (subscriptions[subscriptionHash].status = GEnum.SubscriptionStatus.CANCELLED);
+        return (subscriptions[subscriptionHash].status = GEnum.SubscriptionStatus.CANCELLED);
     }
 
     /// @dev used to help mitigate stack issues
     /// @param subHash bytes32
-    /// @param meta bytes packed meta data
+    /// @param period uint256
+    /// @param offChainID bytes32
+    /// @param expires uint256
     /// @return bool
     function processSub(
         bytes32 subHash,
-        bytes meta // refundAddress / period / offChainID / expires
+        uint256 period,
+        bytes32 offChainID,
+        uint256 expires
     )
     internal
     returns (bool) {
 
         Meta storage sub = subscriptions[subHash];
 
-
         if (sub.status == GEnum.SubscriptionStatus.INIT) {
             sub.status = GEnum.SubscriptionStatus.VALID;
+
+            if (expires != 0) {
+                sub.expires = expires;
+            }
+
+            if (offChainID != 0) {
+                sub.offChainID = offChainID;
+            }
         }
 
+        require((sub.status == GEnum.SubscriptionStatus.VALID && sub.nextWithdraw >= now), "Withdrawal Not Valid");
 
-        uint256 period = bytesToUint(meta,20);
+
+        if (sub.expires != 0 && sub.nextWithdraw > sub.expires) {
+            sub.status = GEnum.SubscriptionStatus.EXPIRED;
+            return false;
+        }
 
         if (period == uint(GEnum.Period.DAY)) {
             sub.nextWithdraw = now + 1 days;
@@ -235,19 +262,12 @@ contract GroundhogModule is Module, SignatureDecoder {
             sub.nextWithdraw = now + 30 days;
         } else {
             revert(string(abi.encodePacked(period)));
-
         }
 
-        require((sub.status == GEnum.SubscriptionStatus.VALID && sub.nextWithdraw >= now), "Withdrawal Not Valid");
 
-//        if (sub.offChainID == 0 && meta.length >= 115) {
-//            sub.offChainID = bytesToUint(meta, 51);
-//        }
-//
-//        //expire set in slot 4, address(20), uint256(32), uint256(32), uint256(32)(optional) 115 length with 0 = 116
-//        if ((sub.expires == 0 && meta.length >= 115)) {
-//            sub.expires = bytesToUint(meta, 83);
-//        }
+        if (sub.offChainID == 0 && offChainID != 0) {
+            sub.offChainID = offChainID;
+        }
 
         return true;
 
@@ -273,13 +293,14 @@ contract GroundhogModule is Module, SignatureDecoder {
         uint256 dataGas,
         uint256 gasPrice,
         address gasToken,
+        address refundAddress,
         bytes meta // refundAddress / period / offChainID / expires
     )
     public
     view
     returns (bytes32)
     {
-        return keccak256(encodeSubscriptionData(to, value, data, operation, safeTxGas, dataGas, gasPrice, gasToken, meta));
+        return keccak256(encodeSubscriptionData(to, value, data, operation, safeTxGas, dataGas, gasPrice, gasToken, refundAddress, meta));
     }
 
 
@@ -303,7 +324,8 @@ contract GroundhogModule is Module, SignatureDecoder {
         uint256 dataGas,
         uint256 gasPrice,
         address gasToken,
-        bytes meta // refundAddress / period / offChainID / expires
+        address refundAddress,
+        bytes meta
     )
     public
     view
@@ -311,35 +333,8 @@ contract GroundhogModule is Module, SignatureDecoder {
     {
 
         bytes32 safeSubTxHash = keccak256(
-            abi.encode(SAFE_SUB_TX_TYPEHASH, to, value, keccak256(data), operation, safeTxGas, dataGas, gasPrice, gasToken, keccak256(meta))
+            abi.encode(SAFE_SUB_TX_TYPEHASH, to, value, keccak256(data), operation, safeTxGas, dataGas, gasPrice, gasToken, refundAddress, keccak256(meta))
         );
         return abi.encodePacked(byte(0x19), byte(1), domainSeparator, safeSubTxHash);
-    }
-
-    /// @dev converts bytes array to uint256
-    /// @param _bytes array to splice from
-    /// @param _start start position in the array
-    /// @return oUint uint256
-    function bytesToUint(bytes _bytes, uint _start)
-    internal
-    pure
-    returns (uint256 oUint) {
-        require(_bytes.length >= (_start + 32), "not long enough to be a valid uint");
-        assembly {
-            oUint := mload(add(add(_bytes, 0x20), _start))
-        }
-    }
-    /// @dev converts bytes array to address
-    /// @param _bytes array to splice from
-    /// @param _start start position in the array
-    /// @return oAddress address
-    function bytesToAddress(bytes _bytes, uint _start)
-    internal
-    pure
-    returns (address oAddress) {
-        require(_bytes.length >= (_start + 20), "Not long enough to be a valid address");
-        assembly {
-            oAddress := div(mload(add(add(_bytes, 0x20), _start)), 0x1000000000000000000000000)
-        }
     }
 }
