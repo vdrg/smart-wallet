@@ -27,15 +27,11 @@ contract GroundhogModule is Module, SignatureDecoder {
     bytes32 public constant DOMAIN_SEPARATOR_TYPEHASH = 0x035aff83d86937d35b32e04f0ddc6ff469290eef2f1b692d8a815c89404d4749;
 
     //keccak256(
-    //  "SafeSubTx(address to,uint256 value,bytes data,uint8 operation,uint256 safeTxGas,uint256 dataGas,uint256 gasPrice,address gasToken,bytes meta)"
+    //  "SafeSubTx(address to,uint256 value,bytes data,uint8 operation,uint256 safeTxGas,uint256 dataGas,uint256 gasPrice,address gasToken,address refundAddress,bytes meta)"
     //)
-    bytes32 public constant SAFE_SUB_TX_TYPEHASH = 0x236927053a7ea16e84dcb166de387fee6c357f810c2330bcc2a9f0b22ea0fbd1;
+    bytes32 public constant SAFE_SUB_TX_TYPEHASH = 0x180e6fe977456676413d21594ff72b84df056409812ba2e51d28187117f143c2;
 
     event PaymentFailed(bytes32 subHash);
-    event LogByte32(bytes32 logentry);
-    event LogUint(uint256 logentry);
-    event LogAddress(uint256 logentry);
-
 
     mapping(bytes32 => Meta) public subscriptions;
 
@@ -65,8 +61,10 @@ contract GroundhogModule is Module, SignatureDecoder {
     /// @param dataGas Gas costs for data used to trigger the safe transaction and to pay the payment transfer
     /// @param gasPrice Gas price that should be used for the payment calculation.
     /// @param gasToken Token address (or 0 if ETH) that is used for the payment.
+    /// @param refundAddress payout address or 0 if tx.origin
     /// @param meta Packed bytes data {address refundReceiver (required}, {uint256 period (required}, {uint256 offChainID (required}, {uint256 expires (optional}
     /// @param signatures Packed signature data ({bytes32 r}{bytes32 s}{uint8 v})
+    /// @returns success boolean value of execution
     function execSubscription(
         address to,
         uint256 value,
@@ -95,12 +93,7 @@ contract GroundhogModule is Module, SignatureDecoder {
 
         require(checkHash(keccak256(subHashData), signatures), "Invalid signatures provided");
 
-        address ctx = address(this);
-        assembly {
-            success := call(gas, ctx, 0, add(meta, 0x20), mload(meta), 0, 0)
-        }
-
-        require(paySubscription(to, value, data, operation), "Unable to Process Subscription Payment");
+        require(paySubscription(to, value, data, operation, meta), "Unable to Process Subscription Payment");
         // If no safeTxGas has been set and the gasPrice is 0 we assume that all available gas can be used
 
         // We transfer the calculated tx costs to the refundReceiver to avoid sending it to intermediate contracts that have made calls
@@ -109,12 +102,25 @@ contract GroundhogModule is Module, SignatureDecoder {
         }
     }
 
-    function paySubscription(address to, uint256 value, bytes data, Enum.Operation operation)
+    /// @dev handles the actual payment of the subscription itself, does a poor mans abi decode and sends the meta data to the processSub method
+    ///      Note: The fees are always transferred, even if the user transaction fails.
+    /// @param to Destination address of Safe transaction.
+
+    function paySubscription(address to, uint256 value, bytes data, Enum.Operation operation, bytes meta)
     authorized
     internal
     returns (bool success) {
+
+        address ctx = address(this);
+
+        assembly {
+        // solium-disable-next-line security/no-inline-assembly
+            success := call(gas, ctx, 0, add(meta, 0x20), mload(meta), 0, 0)
+        }
+
+        require(success, "Could not process subscription metadata");
+
         success = manager.execTransactionFromModule(to, value, data, operation);
-        require(success, "Could not execute subscription");
     }
 
     function handleTxPayment(
@@ -209,12 +215,36 @@ contract GroundhogModule is Module, SignatureDecoder {
     ///      Note: The fees are always transferred, even if the user transaction fails.
     /// @param subscriptionHash bytes32 hash of on sub to revoke or cancel
     function cancelSubscription(
-        bytes32 subscriptionHash
+        address to,
+        uint256 value,
+        bytes data,
+        Enum.Operation operation,
+        uint256 safeTxGas,
+        uint256 dataGas,
+        uint256 gasPrice,
+        address gasToken,
+        address refundAddress,
+        bytes meta,
+        bytes signatures
     )
     public
     authorized
     returns (bool) {
-        return (subscriptions[subscriptionHash].status = GEnum.SubscriptionStatus.CANCELLED);
+
+
+        bytes memory subHashData = encodeSubscriptionData(
+            to, value, data, operation, // Transaction info
+            safeTxGas, dataGas, gasPrice, gasToken, refundAddress,
+            meta
+        );
+        require(subscriptions[keccak256(subHashData)].status != GEnum.SubscriptionStatus.CANCELLED, "Subscription is already cancelled");
+
+        require(checkHash(keccak256(subHashData), signatures), "Invalid signatures provided");
+
+        Meta storage sub = subscriptions[keccak256(subHashData)];
+        sub.status = GEnum.SubscriptionStatus.CANCELLED;
+
+        return true;
     }
 
     /// @dev used to help mitigate stack issues
@@ -232,7 +262,16 @@ contract GroundhogModule is Module, SignatureDecoder {
     internal
     returns (bool) {
 
+
         Meta storage sub = subscriptions[subHash];
+
+
+        require(sub.status != GEnum.SubscriptionStatus.EXPIRED, "Subscription Has Expired");
+
+        if (sub.expires != 0 && sub.nextWithdraw > sub.expires) {
+            sub.status = GEnum.SubscriptionStatus.EXPIRED;
+            return false;
+        }
 
         if (sub.status == GEnum.SubscriptionStatus.INIT) {
             sub.status = GEnum.SubscriptionStatus.VALID;
@@ -246,14 +285,6 @@ contract GroundhogModule is Module, SignatureDecoder {
             }
         }
 
-        require((sub.status == GEnum.SubscriptionStatus.VALID && sub.nextWithdraw >= now), "Withdrawal Not Valid");
-
-
-        if (sub.expires != 0 && sub.nextWithdraw > sub.expires) {
-            sub.status = GEnum.SubscriptionStatus.EXPIRED;
-            return false;
-        }
-
         if (period == uint(GEnum.Period.DAY)) {
             sub.nextWithdraw = now + 1 days;
         } else if (period == uint(GEnum.Period.WEEK)) {
@@ -264,10 +295,7 @@ contract GroundhogModule is Module, SignatureDecoder {
             revert(string(abi.encodePacked(period)));
         }
 
-
-        if (sub.offChainID == 0 && offChainID != 0) {
-            sub.offChainID = offChainID;
-        }
+        require((sub.status == GEnum.SubscriptionStatus.VALID && sub.nextWithdraw >= now), "Withdrawal Not Valid");
 
         return true;
 
