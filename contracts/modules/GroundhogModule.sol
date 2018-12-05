@@ -11,7 +11,7 @@ import "../interfaces/ISignatureValidator.sol";
 
 
 
-/// @title Gnosis Safe - A multisignature wallet with support for subscriptions
+/// @title GroundhogModule - A module with support for Subscription Payments
 /// @author Andrew Redden - <andrew@groundhog.network>
 contract GroundhogModule is Module, SignatureDecoder {
 
@@ -64,7 +64,7 @@ contract GroundhogModule is Module, SignatureDecoder {
     /// @param refundAddress payout address or 0 if tx.origin
     /// @param meta Packed bytes data {address refundReceiver (required}, {uint256 period (required}, {uint256 offChainID (required}, {uint256 expires (optional}
     /// @param signatures Packed signature data ({bytes32 r}{bytes32 s}{uint8 v})
-    /// @returns success boolean value of execution
+    /// @return success boolean value of execution
     function execSubscription(
         address to,
         uint256 value,
@@ -213,7 +213,8 @@ contract GroundhogModule is Module, SignatureDecoder {
 
     /// @dev Allows to execute a Safe transaction confirmed by required number of owners and then pays the account that submitted the transaction.
     ///      Note: The fees are always transferred, even if the user transaction fails.
-    /// @param subscriptionHash bytes32 hash of on sub to revoke or cancel
+    /// @return bool hash of on sub to revoke or cancel
+
     function cancelSubscription(
         address to,
         uint256 value,
