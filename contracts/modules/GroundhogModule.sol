@@ -31,16 +31,20 @@ contract GroundhogModule is Module, SignatureDecoder {
     //)
     bytes32 public constant SAFE_SUB_TX_TYPEHASH = 0x180e6fe977456676413d21594ff72b84df056409812ba2e51d28187117f143c2;
 
-    event PaymentFailed(bytes32 subHash);
-
     mapping(bytes32 => Meta) public subscriptions;
 
     struct Meta {
         GEnum.SubscriptionStatus status;
         uint256 nextWithdraw;
-        bytes32 offChainID;
+        uint256 offChainID;
         uint256 expires;
     }
+
+    event PaymentFailed(bytes32 subscriptionHash);
+    event ProcessingFailed();
+    event LogBytes(bytes);
+    event LogUint(uint);
+    event LogAddress(address);
 
     /// @dev Setup function sets manager
     function setup()
@@ -93,32 +97,49 @@ contract GroundhogModule is Module, SignatureDecoder {
 
         require(checkHash(keccak256(subHashData), signatures), "Invalid signatures provided");
 
-        require(paySubscription(to, value, data, operation, meta), "Unable to Process Subscription Payment");
+        success = paySubscription(to, value, data, operation, keccak256(subHashData), meta);
         // If no safeTxGas has been set and the gasPrice is 0 we assume that all available gas can be used
+
+        if (!success) {
+            emit PaymentFailed(keccak256(subHashData));
+        }
 
         // We transfer the calculated tx costs to the refundReceiver to avoid sending it to intermediate contracts that have made calls
         if (gasPrice > 0) {
             handleTxPayment(startGas, dataGas, gasPrice, gasToken, refundAddress);
         }
+
     }
 
-    /// @dev handles the actual payment of the subscription itself, does a poor mans abi decode and sends the meta data to the processSub method
-    ///      Note: The fees are always transferred, even if the user transaction fails.
-    /// @param to Destination address of Safe transaction.
+    function processMeta(bytes meta)
+    internal
+    pure
+    returns (uint256[3] outMeta) {
+        uint256 period;
+        uint256 offChainID;
+        uint256 expire;
 
-    function paySubscription(address to, uint256 value, bytes data, Enum.Operation operation, bytes meta)
-    authorized
+        // solium-disable-next-line security/no-inline-assembly
+        assembly {
+            period := mload(add(meta, add(0x20, 0)))
+        }
+        // solium-disable-next-line security/no-inline-assembly
+        assembly {
+            offChainID := mload(add(meta, add(0x20, 32)))
+        }
+        // solium-disable-next-line security/no-inline-assembly
+        assembly {
+            expire := mload(add(meta, add(0x20, 64)))
+        }
+        return [period, offChainID, expire];
+    }
+
+
+    function paySubscription(address to, uint256 value, bytes data, Enum.Operation operation, bytes32 subHash, bytes meta)
     internal
     returns (bool success) {
 
-        address ctx = address(this);
-
-        assembly {
-        // solium-disable-next-line security/no-inline-assembly
-            success := call(gas, ctx, 0, add(meta, 0x20), mload(meta), 0, 0)
-        }
-
-        require(success, "Could not process subscription metadata");
+        processSub(subHash, processMeta(meta));
 
         success = manager.execTransactionFromModule(to, value, data, operation);
     }
@@ -143,31 +164,6 @@ contract GroundhogModule is Module, SignatureDecoder {
             // solium-disable-next-line security/no-inline-assembly
             require(manager.execTransactionFromModule(gasToken, 0, data, Enum.Operation.Call), "Could not execute payment in specified gasToken");
         }
-    }
-
-    /// @dev Allows to estimate a Safe transaction.
-    ///      This method is only meant for estimation purpose, therfore two different protection mechanism against execution in a transaction have been made:
-    ///      1.) The method can only be called from the safe itself
-    ///      2.) The response is returned with a revert
-    ///      When estimating set `from` to the address of the safe.
-    ///      Since the `estimateGas` function includes refunds, call this method to get an estimated of the costs that are deducted from the safe with `execTransaction`
-    /// @param to Destination address of Safe transaction.
-    /// @param value Ether value of Safe transaction.
-    /// @param data Data payload of Safe transaction.
-    /// @param operation Operation type of Safe transaction.
-    /// @return Estimate without refunds and overhead fees (base transaction and payload data gas costs).
-    function requiredTxGas(address to, uint256 value, bytes data, Enum.Operation operation)
-    public
-    authorized
-    returns (uint256)
-    {
-        uint256 startGas = gasleft();
-        // We don't provide an error message here, as we use it to return the estimate
-        // solium-disable-next-line error-reason
-        require(manager.execTransactionFromModule(to, value, data, operation));
-        uint256 requiredGas = startGas - gasleft();
-        // Convert response to string and return via error message
-        revert(string(abi.encodePacked(requiredGas)));
     }
 
 
@@ -205,6 +201,9 @@ contract GroundhogModule is Module, SignatureDecoder {
     returns (bool isValid) {
         if (subscriptions[subscriptionHash].status == GEnum.SubscriptionStatus.VALID) {
             return true;
+        } else if (subscriptions[subscriptionHash].status == GEnum.SubscriptionStatus.EXPIRED) {
+            require(subscriptions[subscriptionHash].expires != 0, "Invalid Expiration Set");
+            return (now <= subscriptions[subscriptionHash].expires);
         } else if (subscriptions[subscriptionHash].status == GEnum.SubscriptionStatus.INIT) {
             return checkHash(subscriptionHash, signatures);
         }
@@ -214,7 +213,6 @@ contract GroundhogModule is Module, SignatureDecoder {
     /// @dev Allows to execute a Safe transaction confirmed by required number of owners and then pays the account that submitted the transaction.
     ///      Note: The fees are always transferred, even if the user transaction fails.
     /// @return bool hash of on sub to revoke or cancel
-
     function cancelSubscription(
         address to,
         uint256 value,
@@ -229,7 +227,6 @@ contract GroundhogModule is Module, SignatureDecoder {
         bytes signatures
     )
     public
-    authorized
     returns (bool) {
 
 
@@ -249,33 +246,25 @@ contract GroundhogModule is Module, SignatureDecoder {
     }
 
     /// @dev used to help mitigate stack issues
-    /// @param subHash bytes32
-    /// @param period uint256
-    /// @param offChainID bytes32
-    /// @param expires uint256
     /// @return bool
     function processSub(
         bytes32 subHash,
-        uint256 period,
-        bytes32 offChainID,
-        uint256 expires
+        uint256[3] pmeta
     )
     internal
     returns (bool) {
-
-
+        uint256 period = pmeta[0];
+        uint256 offChainID = pmeta[1];
+        uint256 expires = pmeta[2];
         Meta storage sub = subscriptions[subHash];
 
+        require((sub.status != GEnum.SubscriptionStatus.EXPIRED || sub.status != GEnum.SubscriptionStatus.CANCELLED), "Subscription Invalid");
 
-        require(sub.status != GEnum.SubscriptionStatus.EXPIRED, "Subscription Has Expired");
-
-        if (sub.expires != 0 && sub.nextWithdraw > sub.expires) {
-            sub.status = GEnum.SubscriptionStatus.EXPIRED;
-            return false;
-        }
 
         if (sub.status == GEnum.SubscriptionStatus.INIT) {
+
             sub.status = GEnum.SubscriptionStatus.VALID;
+            sub.nextWithdraw = now;
 
             if (expires != 0) {
                 sub.expires = expires;
@@ -285,6 +274,8 @@ contract GroundhogModule is Module, SignatureDecoder {
                 sub.offChainID = offChainID;
             }
         }
+
+        require((sub.status == GEnum.SubscriptionStatus.VALID && now >= sub.nextWithdraw), "Withdraw Cooldown");
 
         if (period == uint(GEnum.Period.DAY)) {
             sub.nextWithdraw = now + 1 days;
@@ -296,11 +287,29 @@ contract GroundhogModule is Module, SignatureDecoder {
             revert(string(abi.encodePacked(period)));
         }
 
-        require((sub.status == GEnum.SubscriptionStatus.VALID && sub.nextWithdraw >= now), "Withdrawal Not Valid");
-
+        //if a subscription is expiring and its next withdraw timeline is beyond hte time of the expiration
+        //modify the status
+        if (sub.expires != 0 && sub.nextWithdraw > sub.expires) {
+            sub.status = GEnum.SubscriptionStatus.EXPIRED;
+        }
         return true;
-
     }
+
+
+    function getSubscriptionMetaBytes(
+        uint256 period,
+        uint256 offChainID,
+        uint256 expires
+    )
+    public
+    pure
+    returns (bytes) {
+        return abi.encodePacked(period, offChainID, expires);
+    }
+
+
+
+
 
     /// @dev Returns hash to be signed by owners.
     /// @param to Destination address.
@@ -323,7 +332,7 @@ contract GroundhogModule is Module, SignatureDecoder {
         uint256 gasPrice,
         address gasToken,
         address refundAddress,
-        bytes meta // refundAddress / period / offChainID / expires
+        bytes meta // period / offChainID / expires
     )
     public
     view
@@ -365,5 +374,33 @@ contract GroundhogModule is Module, SignatureDecoder {
             abi.encode(SAFE_SUB_TX_TYPEHASH, to, value, keccak256(data), operation, safeTxGas, dataGas, gasPrice, gasToken, refundAddress, keccak256(meta))
         );
         return abi.encodePacked(byte(0x19), byte(1), domainSeparator, safeSubTxHash);
+    }
+
+    /// @dev Allows to estimate a Safe transaction.
+    ///      This method is only meant for estimation purpose, therfore two different protection mechanism against execution in a transaction have been made:
+    ///      1.) The method can only be called from the safe itself
+    ///      2.) The response is returned with a revert
+    ///      When estimating set `from` to the address of the safe.
+    ///      Since the `estimateGas` function includes refunds, call this method to get an estimated of the costs that are deducted from the safe with `execTransaction`
+    /// @param to Destination address of Safe transaction.
+    /// @param value Ether value of Safe transaction.
+    /// @param data Data payload of Safe transaction.
+    /// @param operation Operation type of Safe transaction.
+    /// @return Estimate without refunds and overhead fees (base transaction and payload data gas costs).
+    function requiredTxGas(address to, uint256 value, bytes data, Enum.Operation operation, bytes meta)
+    public
+    authorized
+    returns (uint256)
+    {
+        uint256 startGas = gasleft();
+        // We don't provide an error message here, as we use it to return the estimate
+        // solium-disable-next-line error-reason
+
+        uint256[3] memory pMeta = processMeta(meta);
+        require(manager.execTransactionFromModule(to, value, data, operation));
+        uint256 requiredGas = startGas - gasleft();
+        // Convert response to string and return via error message
+        revert(string(abi.encodePacked(requiredGas)));
+
     }
 }
