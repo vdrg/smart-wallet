@@ -9,7 +9,16 @@ module.exports = {
       host: "localhost",
       port: 8545,
       network_id: "*", // Match any network id
-      gas: 8000000
+      gas: 8000000,
+      gasPrice: 100000000000, // 1 Gwei
+    },
+    devrink: {
+      from: "0x72fe0d6a3e4cb16918a1c658f0856f3d9c64e3d4",
+      host: "localhost",
+      port: 8545,
+      network_id: 4, // Match any network id
+      gas: 6700000,
+      gasPrice: 10000000000, // 1 Gwei
     },
     rinkeby: {
       provider: () => {
@@ -17,7 +26,7 @@ module.exports = {
       },
       network_id: '4',
       gas: 6700000,
-      gasPrice: 1000000000, // 1 Gwei
+      gasPrice: 10000000000, // 1 Gwei
     },
     mainnet: {
       provider: () => {

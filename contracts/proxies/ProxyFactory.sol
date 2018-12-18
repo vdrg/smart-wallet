@@ -1,5 +1,6 @@
 pragma solidity 0.4.24;
 import "./Proxy.sol";
+import "./PayingProxy.sol";
 
 
 /// @title Proxy Factory - Allows to create new proxy contact and execute a message call to the new proxy within one transaction.
@@ -18,6 +19,26 @@ contract ProxyFactory {
         proxy = new Proxy(masterCopy);
         if (data.length > 0)
             // solium-disable-next-line security/no-inline-assembly
+            assembly {
+                if eq(call(gas, proxy, 0, add(data, 0x20), mload(data), 0, 0), 0) { revert(0, 0) }
+            }
+        emit ProxyCreation(proxy);
+    }
+
+    /// @dev Allows to create new proxy contact and execute a message call to the new proxy within one transaction.
+    /// @param masterCopy Address of master copy.
+    /// @param data Payload for message call sent to new proxy contract.
+    /// @param funder Address of the funder
+    /// @param paymentToken address of the token to repay deployment
+    /// @param payment Value of the paymentToken to be paid for deployment
+    function createPayingProxy(address masterCopy, bytes data, address funder, address paymentToken, uint256 payment)
+    public
+    returns (Proxy proxy)
+    {
+        proxy = new PayingProxy(masterCopy, funder, paymentToken, payment);
+
+        if (data.length > 0)
+        // solium-disable-next-line security/no-inline-assembly
             assembly {
                 if eq(call(gas, proxy, 0, add(data, 0x20), mload(data), 0, 0), 0) { revert(0, 0) }
             }

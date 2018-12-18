@@ -10,7 +10,11 @@
   ],
   "scripts": {
     "test-norpc": "node $NODE_DEBUG_OPTION ./node_modules/.bin/truffle test",
-    "test": "run-with-testrpc -l 8700000 --noVMErrorsOnRPCResponse true 'node $NODE_DEBUG_OPTION ./node_modules/.bin/truffle test'"
+    "test": "run-with-testrpc -l 8000000 --noVMErrorsOnRPCResponse true 'node $NODE_DEBUG_OPTION ./node_modules/.bin/truffle test'",
+    "setup-rinkeby": "node $NODE_DEBUG_OPTION ./node_modules/.bin/truffle exec scripts/init_contracts.js --network rinkeby",
+    "test-rinkeby": "node $NODE_DEBUG_OPTION ./node_modules/.bin/truffle test --network rinkeby",
+    "console-rinkeby": "node $NODE_DEBUG_OPTION ./node_modules/.bin/truffle console --network rinkeby",
+    "flatten-contracts": "sol-merger \"./contracts/*.sol\" ./build"
   },
   "repository": {
     "type": "git",
@@ -31,7 +35,7 @@
     "bignumber.js": "^7.1.0",
     "eth-lightwallet": "^3.0.1",
     "ethereumjs-abi": "^0.6.5",
-    "ganache-cli": "^6.1.7",
+    "ganache-cli": "6.1.8",
     "random-buffer": "*",
     "run-with-testrpc": "^0.3.0",
     "solidity-coverage": "^0.4.2",
@@ -39,6 +43,7 @@
     "web3": "0.20.6"
   },
   "dependencies": {
+    "sol-merger": "^0.1.3",
     "solc": "^0.4.24",
     "truffle-hdwallet-provider": "0.0.7-beta.1"
   }

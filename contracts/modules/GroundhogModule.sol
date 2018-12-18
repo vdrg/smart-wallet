@@ -1,20 +1,18 @@
-pragma solidity 0.4.24;
+pragma solidity ^0.5.0;
 
 import "../base/Module.sol";
-import "../base/ModuleManager.sol";
 import "../base/OwnerManager.sol";
-import "../common/Enum.sol";
 import "../common/GEnum.sol";
 import "../common/SignatureDecoder.sol";
-import "../common/SecuredTokenTransfer.sol";
-import "../interfaces/ISignatureValidator.sol";
+import "../libraries/BokkyPooBahsDateTimeLibrary.sol";
+import "../libraries/SafeMath.sol";
 
-
-
-/// @title GroundhogModule - A module with support for Subscription Payments
+/// @title SubscriptionModule - A module with support for Subscription Payments
 /// @author Andrew Redden - <andrew@groundhog.network>
-contract GroundhogModule is Module, SignatureDecoder {
+contract SubscriptionModule is Module, SignatureDecoder {
 
+    using BokkyPooBahsDateTimeLibrary for uint;
+    using SafeMath for uint;
 
     string public constant NAME = "Groundhog";
     string public constant VERSION = "0.0.1";
@@ -42,17 +40,13 @@ contract GroundhogModule is Module, SignatureDecoder {
 
     event PaymentFailed(bytes32 subscriptionHash);
     event ProcessingFailed();
-    event LogBytes(bytes);
-    event LogUint(uint);
-    event LogAddress(address);
 
     /// @dev Setup function sets manager
     function setup()
     public
     {
-        require(domainSeparator == 0, "Domain Separator already set!");
+        require(setManager() && domainSeparator == 0, "Domain Separator already set!");
         domainSeparator = keccak256(abi.encode(DOMAIN_SEPARATOR_TYPEHASH, this));
-        setManager();
     }
 
     /// @dev Allows to execute a Safe transaction confirmed by required number of owners and then pays the account that submitted the transaction.
@@ -79,8 +73,8 @@ contract GroundhogModule is Module, SignatureDecoder {
         uint256 gasPrice,
         address gasToken,
         address refundAddress,
-        bytes meta,
-        bytes signatures
+        bytes  meta,
+        bytes calldata signatures
     )
     public
     returns (bool success)
@@ -139,7 +133,7 @@ contract GroundhogModule is Module, SignatureDecoder {
     internal
     returns (bool success) {
 
-        processSub(subHash, processMeta(meta));
+        success = processSub(subHash, processMeta(meta));
 
         success = manager.execTransactionFromModule(to, value, data, operation);
     }
@@ -275,14 +269,14 @@ contract GroundhogModule is Module, SignatureDecoder {
             }
         }
 
-        require((sub.status == GEnum.SubscriptionStatus.VALID && now >= sub.nextWithdraw), "Withdraw Cooldown");
+        require(((sub.status == GEnum.SubscriptionStatus.VALID && now >= sub.nextWithdraw) && BokkyPooBahsDateTimeLibrary.diffMinutes()), "Withdraw Cooldown");
 
         if (period == uint(GEnum.Period.DAY)) {
-            sub.nextWithdraw = now + 1 days;
+            sub.nextWithdraw = BokkyPooBahsDateTimeLibrary.addDays(sub.nextWithdraw, 1);
         } else if (period == uint(GEnum.Period.WEEK)) {
-            sub.nextWithdraw = now + 7 days;
+            sub.nextWithdraw = BokkyPooBahsDateTimeLibrary.addDays(sub.nextWithdraw, 7);
         } else if (period == uint(GEnum.Period.MONTH)) {
-            sub.nextWithdraw = now + 30 days;
+            sub.nextWithdraw = BokkyPooBahsDateTimeLibrary.addMonths(sub.nextWithdraw, 1);
         } else {
             revert(string(abi.encodePacked(period)));
         }
@@ -387,7 +381,7 @@ contract GroundhogModule is Module, SignatureDecoder {
     /// @param data Data payload of Safe transaction.
     /// @param operation Operation type of Safe transaction.
     /// @return Estimate without refunds and overhead fees (base transaction and payload data gas costs).
-    function requiredTxGas(address to, uint256 value, bytes data, Enum.Operation operation, bytes meta)
+    function requiredTxGas(address to, uint256 value, bytes memory data, Enum.Operation operation, bytes meta)
     public
     authorized
     returns (uint256)

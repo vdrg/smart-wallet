@@ -6,6 +6,12 @@
       "bodyBytecodeHash": "f2d068affc3ba0ab316ac49340f562969ca2904776f8e640109902c82a79b513",
       "bytecodeHash": "713a8a57ac0636fc6e30329eff1420d0216bbed6635baae93e3ac293eeb3ab09"
     },
+    "GroundhogModule": {
+      "address": "0x1cac1bb808b1619b2ae0903179e39ac7b5169914",
+      "constructorCode": "608060405234801561001057600080fd5b506154e4806100206000396000f300",
+      "bodyBytecodeHash": "",
+      "bytecodeHash": ""
+    },
     "MultiSend": {
       "address": "0x607ecc85c613548367ebdee103d6d256d42d5978",
       "constructorCode": "608060405234801561001057600080fd5b50610169806100206000396000f300",

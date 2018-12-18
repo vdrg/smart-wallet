@@ -9,7 +9,19 @@
 // const MockContract = artifacts.require('./MockContract.sol');
 // const MockToken = artifacts.require('./Token.sol');
 //
-// contract('GnosisSafePersonalEdition', function(accounts) {
+// // const utils = require('./utils')
+// const BigNumber = require('bignumber.js')
+// const timeHelper = require('./time')
+// // const fs = require('fs')
+// const CreateAndAddModules = artifacts.require("./libraries/CreateAndAddModules.sol");
+// // const GnosisSafe = artifacts.require("./GnosisSafe.sol")
+// const GroundhogModule = artifacts.require("./modules/GroundhogModule.sol")
+// const ProxyFactory = artifacts.require("./ProxyFactory.sol")
+// // const PayingProxy = artifacts.require("./PayingProxy.sol")
+// const GAS_PRICE = web3.toWei(20, 'gwei')
+//
+//
+// contract('GnosisSafePersonalEdition', function (accounts) {
 //
 //     const CALL = 0
 //
@@ -19,45 +31,78 @@
 //
 //     let funder
 //     let gnosisSafeMasterCopy
-//     let lw
+//     let groundhogModule;
+//     let lw;
 //
-//     let setSignature = function(tx) {
-//         while(true) {
+//     let setSignature = function (tx) {
+//         while (true) {
 //             try {
-//               tx.s = randomBuffer(32) // Could be provided by client
-//               tx.r = randomBuffer(32) // Could be provided by server
-//               setV(tx)
-//               return // Success return
+//                 tx.s = randomBuffer(32) // Could be provided by client
+//                 tx.r = randomBuffer(32) // Could be provided by server
+//                 setV(tx)
+//                 return // Success return
 //             } catch (e) {
 //             }
 //         }
 //         throw "No valid signature found"
 //     }
 //
-//     let setV = function(tx) {
-//         for(v = 27; v <= 30; v++) {
+//     let setV = function (tx) {
+//         for (v = 27; v <= 30; v++) {
 //             try {
-//               tx.v = ethUtil.intToBuffer(v)
-//               tx.getSenderAddress()
-//               return
+//                 tx.v = ethUtil.intToBuffer(v)
+//                 tx.getSenderAddress()
+//                 return
 //             } catch (e) {
 //             }
 //         }
 //         throw "No valid v found"
 //     }
 //
-//     let getCreationData = async function(gasToken, userCosts, gasLimit) {
-//         gnosisSafeData = await gnosisSafeMasterCopy.contract.setup.getData([lw.accounts[0], lw.accounts[1], lw.accounts[2]], 2, 0, "0x")
+//     let getCreationData = async function (gasToken, userCosts, gasLimit) {
+//
+//
+//         let createAndAddModules = await CreateAndAddModules.new()
+//         let proxyFactory = await ProxyFactory.new()
+//         let gnosisSafeMasterCopy = await GnosisSafe.new()
+//         let groundhogModuleMasterCopy = await GroundhogModule.new()
+//         //setup master copies
+//         // gnosisSafeMasterCopy.setup([accounts[0], accounts[1], accounts[2]], 2, 0, "0x")
+//         groundhogModuleMasterCopy.setup()
+//         // let proxyFactory = ProxyFactory.at('0xC514D1c8f68fAAb2361892eb36b57c00E26f72b1')
+//         // let gnosisSafeMasterCopy = GnosisSafe.at('0x2727D69C0BD14B1dDd28371B8D97e808aDc1C2f7')
+//         // let groundhogModuleMasterCopy = GroundhogModule.at('0x1CAc1BB808b1619B2AE0903179E39ac7B5169914')
+//         // let createAndAddModules = CreateAndAddModules.at('0x5096cd7f7f5F2e621A480c1aE8969c03CB647a91')
+//
+//         // Subscription module setup
+//         let groundhogSetupData = await groundhogModuleMasterCopy.contract.setup.getData()
+//         let groundhogCreationData = await proxyFactory.contract.createProxy.getData(groundhogModuleMasterCopy.address, groundhogSetupData)
+//
+//         //groundhogCreationData = "0x" + groundhogCreationData.substr(10)
+//         let modulesCreationData = utils.createAndAddModulesData([groundhogCreationData])
+//         let createAndAddModulesData = createAndAddModules.contract.createAndAddModules.getData(proxyFactory.address, modulesCreationData)
+//
+//
+//         gnosisSafeData = await gnosisSafeMasterCopy.contract.setup.getData([lw.accounts[0], lw.accounts[1], lw.accounts[2]], 2, createAndAddModules.address, createAndAddModulesData)
+//
 //
 //         let rawTx = {
 //             value: 0,
-//             data: PayingProxy.new.getData(gnosisSafeMasterCopy.address, gnosisSafeData, funder, gasToken, userCosts, {data: payingProxyJson.bytecode}),
+//             data: PayingProxy.new.getData(
+//                 gnosisSafeMasterCopy.address,
+//                 gnosisSafeData,
+//                 funder,
+//                 gasToken,
+//                 userCosts,
+//                 {data: payingProxyJson.bytecode}
+//             ),
 //         }
 //
 //         var tx = new EthereumTx(rawTx);
 //         tx.nonce = 0
 //         tx.gasPrice = web3.toHex(gasPrice)
-//         tx.gasLimit = gasLimit || 500000
+//         //tx.gasLimit = gasLimit || 500000
+//         tx.gasLimit = 8000000
 //         setSignature(tx)
 //
 //         let sender = tx.getSenderAddress().toString("hex")
@@ -74,9 +119,14 @@
 //         }
 //     }
 //
-//     let deployWithCreationData = async function(creationData) {
+//     let deployWithCreationData = async function (creationData) {
 //         // Gnosis funds sender
-//         await web3.eth.sendTransaction({from: funder, to: creationData.sender, value: creationData.tx.getUpfrontCost(), gasPrice: creationData.gasPrice})
+//         await web3.eth.sendTransaction({
+//             from: funder,
+//             to: creationData.sender,
+//             value: creationData.tx.getUpfrontCost(),
+//             gasPrice: creationData.gasPrice
+//         })
 //
 //         var raw = '0x' + creationData.tx.serialize().toString('hex')
 //         utils.logGasUsage("deploy safe", await web3.eth.getTransactionReceipt(await web3.eth.sendRawTransaction(raw)))
@@ -97,7 +147,7 @@
 //
 //         let rawTx = {
 //             value: 0,
-//             data: PayingProxy.new.getData(gnosisSafeMasterCopy.address, gnosisSafeData, funder, 0, 0, { data: payingProxyJson.bytecode }),
+//             data: PayingProxy.new.getData(gnosisSafeMasterCopy.address, gnosisSafeData, funder, 0, 0, {data: payingProxyJson.bytecode}),
 //         }
 //         let estimate = web3.eth.estimateGas(rawTx) + 80000
 //
@@ -119,70 +169,70 @@
 //         await safeUtils.executeTransaction(lw, gnosisSafe, 'executeTransaction withdraw 0.5 ETH', [lw.accounts[0], lw.accounts[2]], accounts[0], web3.toWei(0.5, 'ether'), "0x", CALL, accounts[8])
 //         await safeUtils.executeTransaction(lw, gnosisSafe, 'executeTransaction withdraw 0.5 ETH', [lw.accounts[0], lw.accounts[2]], accounts[0], web3.toWei(0.5, 'ether'), "0x", CALL, accounts[8])
 //     })
-//
-//     it('should create safe from random account and pay with token', async () => {
-//         // Deploy token
-//         let token = await safeUtils.deployToken(accounts[0])
-//
-//         // We just set an fix amount of tokens to pay
-//         let creationData = await getCreationData(token.address, 1337)
-//
-//         // User funds safe
-//         token.transfer(creationData.safe, creationData.userCosts, {from: accounts[0]})
-//         assert.equal(await token.balances(creationData.safe), creationData.userCosts);
-//         assert.equal(await token.balances(funder), 0)
-//
-//         await deployWithCreationData(creationData)
-//         assert.equal(await web3.eth.getCode(creationData.safe), payingProxyJson.deployedBytecode)
-//
-//         let gnosisSafe = GnosisSafe.at(creationData.safe)
-//         assert.deepEqual(await gnosisSafe.getOwners(), [lw.accounts[0], lw.accounts[1], lw.accounts[2]])
-//         assert.equal(await token.balances(funder), creationData.userCosts)
-//         assert.equal(await token.balances(gnosisSafe.address), 0)
-//
-//         token.transfer(gnosisSafe.address, 3141596, {from: accounts[0]})
-//         let data = await token.transfer.getData(accounts[1], 212121)
-//         await safeUtils.executeTransaction(lw, gnosisSafe, 'executeTransaction token transfer', [lw.accounts[0], lw.accounts[2]], token.address, 0, data, CALL, accounts[8], { gasToken: token.address })
-//         await safeUtils.executeTransaction(lw, gnosisSafe, 'executeTransaction token transfer', [lw.accounts[0], lw.accounts[2]], token.address, 0, data, CALL, accounts[8], { gasToken: token.address })
-//
-//         assert.equal(await token.balances(accounts[1]), 424242)
-//     })
-//
-//     it('should fail if ether payment fails', async () => {
-//         // We just set an fix amount of eth to pay
-//         let creationData = await getCreationData(0, 500000 * gasPrice)
-//         await deployWithCreationData(creationData)
-//         assert.equal(await web3.eth.getCode(creationData.safe), '0x0')
-//     })
-//
-//     it('should fail if token payment fails', async () => {
-//         // Deploy token
-//         let token = await safeUtils.deployToken(accounts[0])
-//
-//         // We just set an fix amount of tokens to pay
-//         let creationData = await getCreationData(token.address, 1337)
-//         await deployWithCreationData(creationData)
-//         assert.equal(await web3.eth.getCode(creationData.safe), '0x0')
-//
-//         let mockContract = await MockContract.new();
-//         let mockToken = MockToken.at(mockContract.address);
-//
-//         await mockContract.givenAnyRunOutOfGas();
-//         creationData = await getCreationData(mockToken.address, 1337)
-//         await deployWithCreationData(creationData);
-//         assert.equal(await web3.eth.getCode(creationData.safe), '0x0');
-//
-//
-//         await mockContract.givenAnyRevert();
-//         creationData = await getCreationData(mockToken.address, 1337);
-//         await deployWithCreationData(creationData);
-//         assert.equal(await web3.eth.getCode(creationData.safe), '0x0');
-//
-//
-//         await mockContract.givenAnyReturnBool(false);
-//         creationData = await getCreationData(mockToken.address, 1337);
-//         await deployWithCreationData(creationData);
-//         assert.equal(await web3.eth.getCode(creationData.safe), '0x0');
-//
-//     });
+//     //
+//     // it('should create safe from random account and pay with token', async () => {
+//     //     // Deploy token
+//     //     let token = await safeUtils.deployToken(accounts[0])
+//     //
+//     //     // We just set an fix amount of tokens to pay
+//     //     let creationData = await getCreationData(token.address, 1337)
+//     //
+//     //     // User funds safe
+//     //     token.transfer(creationData.safe, creationData.userCosts, {from: accounts[0]})
+//     //     assert.equal(await token.balances(creationData.safe), creationData.userCosts);
+//     //     assert.equal(await token.balances(funder), 0)
+//     //
+//     //     await deployWithCreationData(creationData)
+//     //     assert.equal(await web3.eth.getCode(creationData.safe), payingProxyJson.deployedBytecode)
+//     //
+//     //     let gnosisSafe = GnosisSafe.at(creationData.safe)
+//     //     assert.deepEqual(await gnosisSafe.getOwners(), [lw.accounts[0], lw.accounts[1], lw.accounts[2]])
+//     //     assert.equal(await token.balances(funder), creationData.userCosts)
+//     //     assert.equal(await token.balances(gnosisSafe.address), 0)
+//     //
+//     //     token.transfer(gnosisSafe.address, 3141596, {from: accounts[0]})
+//     //     let data = await token.transfer.getData(accounts[1], 212121)
+//     //     await safeUtils.executeTransaction(lw, gnosisSafe, 'executeTransaction token transfer', [lw.accounts[0], lw.accounts[2]], token.address, 0, data, CALL, accounts[8], { gasToken: token.address })
+//     //     await safeUtils.executeTransaction(lw, gnosisSafe, 'executeTransaction token transfer', [lw.accounts[0], lw.accounts[2]], token.address, 0, data, CALL, accounts[8], { gasToken: token.address })
+//     //
+//     //     assert.equal(await token.balances(accounts[1]), 424242)
+//     // })
+//     //
+//     // it('should fail if ether payment fails', async () => {
+//     //     // We just set an fix amount of eth to pay
+//     //     let creationData = await getCreationData(0, 500000 * gasPrice)
+//     //     await deployWithCreationData(creationData)
+//     //     assert.equal(await web3.eth.getCode(creationData.safe), '0x0')
+//     // })
+//     //
+//     // it('should fail if token payment fails', async () => {
+//     //     // Deploy token
+//     //     let token = await safeUtils.deployToken(accounts[0])
+//     //
+//     //     // We just set an fix amount of tokens to pay
+//     //     let creationData = await getCreationData(token.address, 1337)
+//     //     await deployWithCreationData(creationData)
+//     //     assert.equal(await web3.eth.getCode(creationData.safe), '0x0')
+//     //
+//     //     let mockContract = await MockContract.new();
+//     //     let mockToken = MockToken.at(mockContract.address);
+//     //
+//     //     await mockContract.givenAnyRunOutOfGas();
+//     //     creationData = await getCreationData(mockToken.address, 1337)
+//     //     await deployWithCreationData(creationData);
+//     //     assert.equal(await web3.eth.getCode(creationData.safe), '0x0');
+//     //
+//     //
+//     //     await mockContract.givenAnyRevert();
+//     //     creationData = await getCreationData(mockToken.address, 1337);
+//     //     await deployWithCreationData(creationData);
+//     //     assert.equal(await web3.eth.getCode(creationData.safe), '0x0');
+//     //
+//     //
+//     //     await mockContract.givenAnyReturnBool(false);
+//     //     creationData = await getCreationData(mockToken.address, 1337);
+//     //     await deployWithCreationData(creationData);
+//     //     assert.equal(await web3.eth.getCode(creationData.safe), '0x0');
+//     //
+//     // });
 // })
