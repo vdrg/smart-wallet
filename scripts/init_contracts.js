@@ -2,7 +2,6 @@ const fs = require('fs');
 const GnosisSafe = artifacts.require("./GnosisSafe.sol");
 const StateChannelModule = artifacts.require("./StateChannelModule.sol");
 const DailyLimitModule = artifacts.require("./DailyLimitModule.sol")
-const GroundhogModule = artifacts.require("./GroundhogModule.sol")
 const SocialRecoveryModule = artifacts.require("./SocialRecoveryModule.sol");
 const WhitelistModule = artifacts.require("./WhitelistModule.sol");
 
@@ -31,12 +30,11 @@ module.exports = function(callback) {
     });
     var zos = JSON.parse(fs.readFileSync('./zos.' + network + '.json'));  
     Promise.all([
-        // ignoreErrors(GnosisSafe.at(zos.contracts['GnosisSafe'].address).setup([notOwnedAddress, notOwnedAddress2], 2, 0, 0)),
-        ignoreErrors(GroundhogModule.at('0x1cac1bb808b1619b2ae0903179e39ac7b5169914').setup()),
-        // ignoreErrors(StateChannelModule.at(zos.contracts['StateChannelModule'].address).setup()),
-        // ignoreErrors(DailyLimitModule.at(zos.contracts['DailyLimitModule'].address).setup([],[])),
-        // ignoreErrors(SocialRecoveryModule.at(zos.contracts['SocialRecoveryModule'].address).setup([notOwnedAddress, notOwnedAddress2], 2)),
-        // ignoreErrors(WhitelistModule.at(zos.contracts['WhitelistModule'].address).setup([])),
+        ignoreErrors(GnosisSafe.at(zos.contracts['GnosisSafe'].address).setup([notOwnedAddress, notOwnedAddress2], 2, 0, 0)),
+        ignoreErrors(StateChannelModule.at(zos.contracts['StateChannelModule'].address).setup()),
+        ignoreErrors(DailyLimitModule.at(zos.contracts['DailyLimitModule'].address).setup([],[])),
+        ignoreErrors(SocialRecoveryModule.at(zos.contracts['SocialRecoveryModule'].address).setup([notOwnedAddress, notOwnedAddress2], 2)),
+        ignoreErrors(WhitelistModule.at(zos.contracts['WhitelistModule'].address).setup([])),
     ])
         .then(function(values) {
             values.forEach(function(resp) {

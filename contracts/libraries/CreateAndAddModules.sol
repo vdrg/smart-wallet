@@ -7,14 +7,12 @@ import "../base/Module.sol";
 /// @author Richard Meissner - <richard@gnosis.pm>
 contract CreateAndAddModules {
 
-    event ShouldntBeHere();
     /// @dev Function required to compile contract. Gnosis Safe function is called instead.
     /// @param module Not used.
     function enableModule(Module module)
         public
     {
-//        revert();
-        emit ShouldntBeHere();
+        revert();
     }
 
     /// @dev Allows to create and add multiple module in one transaction.

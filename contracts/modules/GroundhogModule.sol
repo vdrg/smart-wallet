@@ -1,18 +1,20 @@
-pragma solidity ^0.5.0;
+pragma solidity 0.4.24;
 
 import "../base/Module.sol";
+import "../base/ModuleManager.sol";
 import "../base/OwnerManager.sol";
+import "../common/Enum.sol";
 import "../common/GEnum.sol";
 import "../common/SignatureDecoder.sol";
-import "../libraries/BokkyPooBahsDateTimeLibrary.sol";
-import "../libraries/SafeMath.sol";
+import "../common/SecuredTokenTransfer.sol";
+import "../interfaces/ISignatureValidator.sol";
 
-/// @title SubscriptionModule - A module with support for Subscription Payments
+
+
+/// @title GroundhogModule - A module with support for Subscription Payments
 /// @author Andrew Redden - <andrew@groundhog.network>
-contract SubscriptionModule is Module, SignatureDecoder {
+contract GroundhogModule is Module, SignatureDecoder {
 
-    using BokkyPooBahsDateTimeLibrary for uint;
-    using SafeMath for uint;
 
     string public constant NAME = "Groundhog";
     string public constant VERSION = "0.0.1";
@@ -40,13 +42,17 @@ contract SubscriptionModule is Module, SignatureDecoder {
 
     event PaymentFailed(bytes32 subscriptionHash);
     event ProcessingFailed();
+    event LogBytes(bytes);
+    event LogUint(uint);
+    event LogAddress(address);
 
     /// @dev Setup function sets manager
     function setup()
     public
     {
-        require(setManager() && domainSeparator == 0, "Domain Separator already set!");
+        require(domainSeparator == 0, "Domain Separator already set!");
         domainSeparator = keccak256(abi.encode(DOMAIN_SEPARATOR_TYPEHASH, this));
+        setManager();
     }
 
     /// @dev Allows to execute a Safe transaction confirmed by required number of owners and then pays the account that submitted the transaction.
@@ -73,8 +79,8 @@ contract SubscriptionModule is Module, SignatureDecoder {
         uint256 gasPrice,
         address gasToken,
         address refundAddress,
-        bytes  meta,
-        bytes calldata signatures
+        bytes meta,
+        bytes signatures
     )
     public
     returns (bool success)
@@ -133,7 +139,7 @@ contract SubscriptionModule is Module, SignatureDecoder {
     internal
     returns (bool success) {
 
-        success = processSub(subHash, processMeta(meta));
+        processSub(subHash, processMeta(meta));
 
         success = manager.execTransactionFromModule(to, value, data, operation);
     }
@@ -269,14 +275,14 @@ contract SubscriptionModule is Module, SignatureDecoder {
             }
         }
 
-        require(((sub.status == GEnum.SubscriptionStatus.VALID && now >= sub.nextWithdraw) && BokkyPooBahsDateTimeLibrary.diffMinutes()), "Withdraw Cooldown");
+        require((sub.status == GEnum.SubscriptionStatus.VALID && now >= sub.nextWithdraw), "Withdraw Cooldown");
 
         if (period == uint(GEnum.Period.DAY)) {
-            sub.nextWithdraw = BokkyPooBahsDateTimeLibrary.addDays(sub.nextWithdraw, 1);
+            sub.nextWithdraw = now + 1 days;
         } else if (period == uint(GEnum.Period.WEEK)) {
-            sub.nextWithdraw = BokkyPooBahsDateTimeLibrary.addDays(sub.nextWithdraw, 7);
+            sub.nextWithdraw = now + 7 days;
         } else if (period == uint(GEnum.Period.MONTH)) {
-            sub.nextWithdraw = BokkyPooBahsDateTimeLibrary.addMonths(sub.nextWithdraw, 1);
+            sub.nextWithdraw = now + 30 days;
         } else {
             revert(string(abi.encodePacked(period)));
         }
@@ -381,7 +387,7 @@ contract SubscriptionModule is Module, SignatureDecoder {
     /// @param data Data payload of Safe transaction.
     /// @param operation Operation type of Safe transaction.
     /// @return Estimate without refunds and overhead fees (base transaction and payload data gas costs).
-    function requiredTxGas(address to, uint256 value, bytes memory data, Enum.Operation operation, bytes meta)
+    function requiredTxGas(address to, uint256 value, bytes data, Enum.Operation operation, bytes meta)
     public
     authorized
     returns (uint256)

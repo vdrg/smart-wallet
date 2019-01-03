@@ -1,19 +1,16 @@
 const utils = require('./utils')
-const BigNumber = require('bignumber.js')
-const timeHelper = require('./time')
-const fs = require('fs')
+const BigNumber = require('bignumber.js');
+const timeHelper = require('./time');
+
 const CreateAndAddModules = artifacts.require("./libraries/CreateAndAddModules.sol");
 const GnosisSafe = artifacts.require("./GnosisSafe.sol")
 const GroundhogModule = artifacts.require("./modules/GroundhogModule.sol")
 const ProxyFactory = artifacts.require("./ProxyFactory.sol")
-// const PayingProxy = artifacts.require("./PayingProxy.sol")
-const GAS_PRICE = web3.toWei(20, 'gwei')
+const GAS_PRICE = web3.toWei(20, 'gwei');
 
 
 
 contract('GroundhogModule', function (accounts) {
-    const payingProxyJson = JSON.parse(fs.readFileSync("./build/contracts/PayingProxy.json"))
-    const PayingProxy = web3.eth.contract(payingProxyJson.abi)
 
     let gnosisSafe;
     let groundhogModule;
@@ -170,63 +167,26 @@ contract('GroundhogModule', function (accounts) {
         // Create lightwallet
         // lw = await utils.createLightwallet()
         // Create libraries
-        // Create Master Copies
-
-        /**Safes
-         GnosisSafe: 0x2727d69c0bd14b1ddd28371b8d97e808adc1c2f7
-
-         Factories
-         ProxyFactory: 0xf81e35398b5d09d891db0199064ff4a53e7ecae6
-
-         Libraries
-         CreateAndAddModules: 0x5096cd7f7f5f2e621a480c1ae8969c03cb647a91
-         MultiSend: 0x607ecc85c613548367ebdee103d6d256d42d5978
-
-         Modules
-         StateChannelModule: 0x46060a29a9ea946b2e37058288e029554a9d73c8
-         DailyLimitModule: 0x6e3a1f364c112736ca88ea113b70dcae53a4def6
-         SocialRecoveryModule: 0x96967d1f6bade086b8e31f04b14753f9649b3d9e
-         WhitelistModule: 0xbb2d70bafda6dd0f8770713b71e7fecf74adfd95
-
-         */
-
         let createAndAddModules = await CreateAndAddModules.new()
+        // Create Master Copies
         let proxyFactory = await ProxyFactory.new()
         let gnosisSafeMasterCopy = await GnosisSafe.new()
-        let groundhogModuleMasterCopy = await GroundhogModule.new()
-        // //setup master copies
         gnosisSafeMasterCopy.setup([accounts[0], accounts[1], accounts[2]], 2, 0, "0x")
-        groundhogModuleMasterCopy.setup()
-        // let proxyFactory = ProxyFactory.at('0xf81e35398b5d09d891db0199064ff4a53e7ecae6')
-        // let gnosisSafeMasterCopy = GnosisSafe.at('0x2727d69c0bd14b1ddd28371b8d97e808adc1c2f7')
-        // let groundhogModuleMasterCopy = GroundhogModule.at('0x1cac1bb808b1619b2ae0903179e39ac7b5169914')
-        // let createAndAddModules = CreateAndAddModules.at('0x5096cd7f7f5F2e621A480c1aE8969c03CB647a91')
+        let groundhogModuleMasterCopy = await GroundhogModule.new()
 
-        // Subscription module setup
+        // State channel module setup
         let groundhogSetupData = await groundhogModuleMasterCopy.contract.setup.getData()
         let groundhogCreationData = await proxyFactory.contract.createProxy.getData(groundhogModuleMasterCopy.address, groundhogSetupData)
 
-        //groundhogCreationData = "0x" + groundhogCreationData.substr(10)
         let modulesCreationData = utils.createAndAddModulesData([groundhogCreationData])
-
-        //called as apart of the setup, currently doesn't work when initialized through the constructor paying proxy workflow
-        let createAndAddModulesData = createAndAddModules.contract.createAndAddModules.getData(proxyFactory.address, modulesCreationData )
+        let createAndAddModulesData = createAndAddModules.contract.createAndAddModules.getData(proxyFactory.address, modulesCreationData)
         // console.log(createAndAddModulesData);
         // Create Gnosis Safe
-        let gnosisSafeData = await gnosisSafeMasterCopy.contract.setup.getData([accounts[0], accounts[1], accounts[2]], 1, createAndAddModules.address, createAndAddModulesData)
-        // gnosisSafe = utils.getParamFromTxEvent(
-        //     await proxyFactory.createProxy(gnosisSafeMasterCopy.address, gnosisSafeData),
-        //     'ProxyCreation', 'proxy', proxyFactory.address, GnosisSafe, 'create Gnosis Safe',
-        // )
-
-        // await web3.eth.sendTransaction({from: receiver, to: gnosisSafe.address, value: web3.toWei(1.1, 'ether')})
+        let gnosisSafeData = await gnosisSafeMasterCopy.contract.setup.getData([accounts[0], accounts[1], accounts[2]], 2, createAndAddModules.address, createAndAddModulesData)
         gnosisSafe = utils.getParamFromTxEvent(
             await proxyFactory.createProxy(gnosisSafeMasterCopy.address, gnosisSafeData),
             'ProxyCreation', 'proxy', proxyFactory.address, GnosisSafe, 'create Gnosis Safe',
         )
-        //let tx = await PayingProxy.new(gnosisSafeMasterCopy.address, gnosisSafeData, 0, 0, 0)
-
-        console.log(gnosisSafe.address);
         let modules = await gnosisSafe.getModules()
         groundhogModule = GroundhogModule.at(modules[0])
         assert.equal(await groundhogModule.manager.call(), gnosisSafe.address)
@@ -271,43 +231,43 @@ contract('GroundhogModule', function (accounts) {
         assert.equal(receiverDiff, web3.toWei(1, 'ether'))
     });
 
-    // it('should deposit 1.1 ETH attempt to pay the same 0.5 subscription twice in the same day', async () => {
-    //     // Deposit 1 ETH + some spare money for execution
-    //     assert.equal(await web3.eth.getBalance(gnosisSafe.address), 0)
-    //     await web3.eth.sendTransaction({from: receiver, to: gnosisSafe.address, value: web3.toWei(1.1, 'ether')})
-    //     assert.equal(await web3.eth.getBalance(gnosisSafe.address).toNumber(), web3.toWei(1.1, 'ether'))
-    //
-    //     let executorBalance = await web3.eth.getBalance(executor).toNumber()
-    //     let recieverBalance = await web3.eth.getBalance(receiver).toNumber()
-    //     let confirmingAccounts = [accounts[0], accounts[2]]
-    //
-    //
-    //     // Withdraw 0.5 ETH
-    //     let tx = await executeSubscriptionWithSigner(signer, 'executeSubscription withdraw 0.5 ETH', confirmingAccounts, receiver, web3.toWei(0.5, 'ether'), "0x", CALL, executor, {meta: await groundhogModule.contract.getSubscriptionMetaBytes(1, 1, 0)})
-    //
-    //
-    //     console.log(`    Paying Daily Subscription Tx 0.5 ETH: ${tx}`);
-    //
-    //     let safeBalanceAfter = await web3.eth.getBalance(gnosisSafe.address).toNumber();
-    //     console.log(`    Balance After: ${safeBalanceAfter}`);
-    //
-    //     console.log(`    Requesting Another Payment Immediately`);
-    //
-    //     await utils.assertRejects(
-    //         executeSubscriptionWithSigner(signer, 'executeSubscription withdraw 0.5 ETH', confirmingAccounts, receiver, web3.toWei(0.5, 'ether'), "0x", CALL, executor, {fails: true, meta: await groundhogModule.contract.getSubscriptionMetaBytes(1, 1, 0)}),
-    //         "Withdraw Cooldown"
-    //     )
-    //
-    //
-    //     // console.log(`    Paying Daily Subscription Tx 0.5 ETH: ${tx2}`);
-    //     safeBalanceAfter = await web3.eth.getBalance(gnosisSafe.address).toNumber();
-    //     console.log(`    After: ${safeBalanceAfter}`);
-    //     let executorDiff = await web3.eth.getBalance(executor) - executorBalance
-    //     let receiverDiff = await web3.eth.getBalance(receiver) - recieverBalance
-    //
-    //     console.log("    Executor earned " + web3.fromWei(executorDiff, 'ether') + " ETH");
-    //
-    //     assert.equal(receiverDiff, web3.toWei(0.5, 'ether'));
-    //
-    // });
+    it('should deposit 1.1 ETH attempt to pay the same 0.5 subscription twice in the same day', async () => {
+        // Deposit 1 ETH + some spare money for execution
+        assert.equal(await web3.eth.getBalance(gnosisSafe.address), 0)
+        await web3.eth.sendTransaction({from: receiver, to: gnosisSafe.address, value: web3.toWei(1.1, 'ether')})
+        assert.equal(await web3.eth.getBalance(gnosisSafe.address).toNumber(), web3.toWei(1.1, 'ether'))
+
+        let executorBalance = await web3.eth.getBalance(executor).toNumber()
+        let recieverBalance = await web3.eth.getBalance(receiver).toNumber()
+        let confirmingAccounts = [accounts[0], accounts[2]]
+
+
+        // Withdraw 0.5 ETH
+        let tx = await executeSubscriptionWithSigner(signer, 'executeSubscription withdraw 0.5 ETH', confirmingAccounts, receiver, web3.toWei(0.5, 'ether'), "0x", CALL, executor, {meta: await groundhogModule.contract.getSubscriptionMetaBytes(1, 1, 0)})
+
+
+        console.log(`    Paying Daily Subscription Tx 0.5 ETH: ${tx}`);
+
+        let safeBalanceAfter = await web3.eth.getBalance(gnosisSafe.address).toNumber();
+        console.log(`    Balance After: ${safeBalanceAfter}`);
+
+        console.log(`    Requesting Another Payment Immediately`);
+
+        await utils.assertRejects(
+            executeSubscriptionWithSigner(signer, 'executeSubscription withdraw 0.5 ETH', confirmingAccounts, receiver, web3.toWei(0.5, 'ether'), "0x", CALL, executor, {fails: true, meta: await groundhogModule.contract.getSubscriptionMetaBytes(1, 1, 0)}),
+            "Withdraw Cooldown"
+        )
+
+
+        // console.log(`    Paying Daily Subscription Tx 0.5 ETH: ${tx2}`);
+        safeBalanceAfter = await web3.eth.getBalance(gnosisSafe.address).toNumber();
+        console.log(`    After: ${safeBalanceAfter}`);
+        let executorDiff = await web3.eth.getBalance(executor) - executorBalance
+        let receiverDiff = await web3.eth.getBalance(receiver) - recieverBalance
+
+        console.log("    Executor earned " + web3.fromWei(executorDiff, 'ether') + " ETH");
+
+        assert.equal(receiverDiff, web3.toWei(0.5, 'ether'));
+
+    });
 })
